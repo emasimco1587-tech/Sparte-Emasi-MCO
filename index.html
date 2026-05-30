@@ -300,13 +300,9 @@ main{display:flex;flex-direction:column;min-width:0}
 
 /* ============ MOBILE ============ */
 @media(max-width:900px){
-  header{gap:10px;padding:9px 14px;padding-top:max(9px,env(safe-area-inset-top))}
-  .brand p,.clock,.stats,.top-actions{display:none}
-  #backBtn{display:grid}
   #app{grid-template-columns:1fr}
   aside{display:none}
   main{min-height:auto}
-  .toolbar{position:sticky;top:56px;padding:12px 14px;gap:10px;flex-direction:column;align-items:stretch}
   .who h2{font-size:18px}
   .tb-right{margin-left:0;width:100%;flex-direction:column;gap:8px}
   .seg{width:100%}
@@ -333,15 +329,120 @@ main{display:flex;flex-direction:column;min-width:0}
   .seg button{font-size:12.5px;padding:10px 4px}
   #bottomNav .tab{font-size:9.5px}
 }
+
+/* ===== Verrou mot de passe ===== */
+#lock{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:28px;
+  background:rgba(2,4,10,.7);backdrop-filter:blur(40px) saturate(1.7) brightness(1.1);-webkit-backdrop-filter:blur(40px) saturate(1.7) brightness(1.1);
+  background-image:radial-gradient(700px 500px at 100% -8%,rgba(10,132,255,.34),transparent 56%),radial-gradient(680px 520px at -8% 8%,rgba(100,210,255,.2),transparent 56%);}
+#lock.show{display:flex;animation:fade .2s ease}
+.lock-card{width:min(380px,100%);text-align:center;padding:38px 28px;border-radius:26px;
+  background:var(--glass);backdrop-filter:blur(40px) saturate(1.9) brightness(1.15);-webkit-backdrop-filter:blur(40px) saturate(1.9) brightness(1.15);border:1px solid var(--line-2);box-shadow:var(--sh-glow)}
+.lock-logo{width:62px;height:62px;margin:0 auto 18px;border-radius:19px;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(145deg,var(--blue-2),var(--blue-d));box-shadow:0 0 26px -4px var(--blue-glow)}
+.lock-logo span{font-family:'Fraunces';font-weight:600;font-size:28px}
+.lock-card h2{font-family:'Fraunces';font-size:24px;margin-bottom:7px}
+.lock-card p{color:var(--soft);font-size:13.5px;margin-bottom:22px}
+.lock-field{position:relative;margin-bottom:14px}
+.lock-field input{width:100%;padding:15px 46px 15px 16px;border-radius:15px;font-size:17px;text-align:center;letter-spacing:.04em;
+  border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink)}
+.lock-field input::placeholder{color:var(--faint);letter-spacing:0}
+.lock-field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
+.lock-field button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--soft)}
+.lock-field button:active{background:var(--glass-hi)}
+.lock-field button svg{width:18px;height:18px}
+.lock-btn{width:100%;padding:15px;border-radius:15px;font-weight:700;font-size:15px;color:#fff;
+  background:linear-gradient(145deg,var(--blue),var(--blue-d));box-shadow:0 0 22px -6px var(--blue-glow)}
+.lock-btn:active{transform:scale(.98)}
+#lockErr{color:#ff6b6b;font-size:13px;font-weight:600;margin-top:14px;min-height:18px}
+
+/* ===== Écran favori ===== */
+#fav{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;
+  background:rgba(8,12,20,.72);backdrop-filter:blur(40px) saturate(1.8) brightness(1.1);-webkit-backdrop-filter:blur(40px) saturate(1.8) brightness(1.1);
+  background-image:radial-gradient(700px 500px at 100% -8%,rgba(10,132,255,.3),transparent 56%),radial-gradient(680px 520px at -8% 110%,rgba(100,210,255,.18),transparent 56%);}
+#fav.show{display:flex;animation:fade .22s ease}
+.fav-skip{margin:0 auto;width:min(680px,100%);padding:14px;border-radius:14px;font-weight:600;font-size:14px;color:var(--soft);
+  background:var(--glass-2);border:1px solid var(--line);margin-bottom:calc(16px + env(safe-area-inset-bottom))}
+.fav-skip:active{transform:scale(.98)}
+.pick-item.is-fav{border-color:var(--blue);box-shadow:0 0 18px -8px var(--blue-glow)}
+.pick-item .fav-star{color:var(--blue-2);width:18px;height:18px;flex:none}
+
+/* ===== Vue Équipe globale ===== */
+.team-wrap{display:flex;flex-direction:column;gap:16px}
+.team-legend{display:flex;flex-wrap:wrap;gap:7px;padding:2px 0 4px}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink);background:var(--glass-2);border:1px solid var(--line);padding:4px 10px 4px 7px;border-radius:20px}
+.lg .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.team-day{border-radius:var(--r);overflow:hidden;background:var(--glass);backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);-webkit-backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);border:1px solid var(--line);box-shadow:var(--sh)}
+.team-day.is-today{border-color:var(--blue);box-shadow:var(--sh-glow)}
+.team-day-h{display:flex;align-items:center;gap:10px;padding:11px 15px;background:var(--glass-hi);border-bottom:1px solid var(--line)}
+.team-day-h .tdn{font-family:'Fraunces';font-size:17px}
+.team-day-h .tdw{font-size:11.5px;color:var(--soft);text-transform:capitalize}
+.team-day-h .tdc{margin-left:auto;font-family:'IBM Plex Mono';font-size:11px;color:var(--soft)}
+.team-day.is-today .team-day-h{background:linear-gradient(145deg,rgba(10,132,255,.28),rgba(0,96,223,.18))}
+.team-rows{padding:8px;display:flex;flex-direction:column;gap:6px}
+.trow{display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:stretch;cursor:pointer;border-radius:11px;padding:7px 8px;transition:.12s}
+.trow:hover{background:var(--glass-hi)}
+.trow:active{transform:scale(.995)}
+.trow .tp{display:flex;align-items:center;gap:8px;min-width:0}
+.trow .tp .pdot{width:10px;height:10px;border-radius:50%;flex:none}
+.trow .tp .pn{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .tlabel{min-width:0;border-radius:9px;padding:7px 11px;font-size:12.5px;line-height:1.35;color:#fff;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;align-self:center}
+.trow .tlabel .tt{font-family:'IBM Plex Mono';font-size:10px;opacity:.85;display:block;margin-top:2px}
+
+@media(max-width:900px){
+  /* barre du haut totalement vide sur mobile : seul le bouton retour flotte */
+  header{position:fixed;top:0;left:0;right:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:none;
+    padding:max(8px,env(safe-area-inset-top)) 12px 0;min-height:0;pointer-events:none}
+  #brandBox{display:none}
+  header .top-actions{display:none}
+  #backBtn{display:grid;pointer-events:auto;background:rgba(10,14,22,.55);backdrop-filter:blur(20px) saturate(1.7);-webkit-backdrop-filter:blur(20px) saturate(1.7)}
+  main{min-height:auto}
+  .toolbar{position:sticky;top:0;padding:calc(max(8px,env(safe-area-inset-top)) + 50px) 14px 12px}
+  #app{min-height:100vh}
+  .trow{grid-template-columns:118px 1fr;gap:8px}
+}
 </style>
 </head>
 <body>
+
+<!-- VERROU : mot de passe à la première ouverture -->
+<div id="lock">
+  <div class="lock-card">
+    <div class="lock-logo"><span>P</span></div>
+    <h2>Planning</h2>
+    <p>Accès protégé — saisissez le code.</p>
+    <div class="lock-field">
+      <input id="lockInput" type="password" inputmode="text" placeholder="Code d'accès" autocomplete="off">
+      <button id="lockShow" type="button" title="Afficher/masquer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <button class="lock-btn" id="lockGo">Déverrouiller</button>
+    <div id="lockErr"></div>
+  </div>
+</div>
+
+<!-- CHOIX DU FAVORI : première ouverture -->
+<div id="fav">
+  <div class="sheet">
+    <div class="sheet-head" style="padding-top:max(28px,env(safe-area-inset-top))">
+      <h2>Sélectionnez votre nom</h2>
+      <p>Il sera affiché automatiquement aux prochaines ouvertures. Modifiable ensuite dans Réglages.</p>
+      <div class="psearch">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>
+        <input id="favSearch" placeholder="Rechercher votre nom…" autocomplete="off">
+      </div>
+    </div>
+    <div class="picker-list" id="favList"></div>
+    <button class="fav-skip" id="favSkip">Ignorer pour cette fois</button>
+  </div>
+</div>
 
 <header>
   <button class="iconbtn" id="backBtn" title="Menu principal">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
   </button>
-  <div class="brand">
+  <div class="brand" id="brandBox">
     <div class="logo"><span>P</span></div>
     <div>
       <h1>Planning</h1>
@@ -394,6 +495,7 @@ main{display:flex;flex-direction:column;min-width:0}
           <button data-v="week" class="on">Semaine</button>
           <button data-v="agenda">Agenda</button>
           <button data-v="month">Mois</button>
+          <button data-v="team">Équipe</button>
         </div>
         <div class="nav" id="periodNav">
           <button id="prev" title="Précédent">‹</button>
@@ -443,6 +545,11 @@ main{display:flex;flex-direction:column;min-width:0}
       <p>Mettre à jour le planning et publier en ligne.</p>
     </div>
     <div class="set-list">
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.3 6.2 21l1.6-6.6L2.5 9.9l6.8-.6L12 3l2.7 6.3 6.8.6-5.3 4.5 1.6 6.6z"/></svg>Mon nom (favori)</h3>
+        <p id="favCurrent">Aucun favori. Choisissez votre nom pour l'afficher directement à l'ouverture.</p>
+        <button class="btn btn-ink" id="setFav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Choisir / changer mon nom</button>
+      </div>
       <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Mettre à jour les données</h3>
         <p>Chargez un nouvel export <b>Excel (.xlsx)</b> ou un fichier <b>.json</b>. L'affichage se met à jour immédiatement sur cet appareil.</p>
@@ -498,7 +605,13 @@ const DOW=['dim','lun','mar','mer','jeu','ven','sam'];
 const DOW_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
-const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map()};
+const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null};
+const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
+/* stockage local (mémorise mot de passe validé + favori) */
+const PASSWORD="Emasi1587!";
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
 
 /* ---------- helpers ---------- */
 const norm=s=>(s==null?'':String(s)).trim();
@@ -577,6 +690,11 @@ function build(entries){
   const team=new Map();
   for(const e of entries){if(!e.tache)continue;const k=dKey(e.date)+'|'+e.tache;if(!team.has(k))team.set(k,[]);team.get(k).push(e);}
   state.team=team;
+  // couleur stable par personne (vue équipe)
+  state.color=new Map();
+  const reals=state.people.filter(n=>!SPECIAL.test(n));
+  reals.forEach((n,i)=>state.color.set(n,PALETTE[i%PALETTE.length]));
+  state.people.forEach(n=>{if(!state.color.has(n))state.color.set(n,'#8a93a6');});
   state.current=state.people[0]||null;
   // cursor = today if within data range, else first entry's week
   const dates=entries.map(e=>e.date).sort((a,b)=>a-b);
@@ -626,6 +744,14 @@ function tickClock(){
 
 /* ---------- main render ---------- */
 function renderMain(){
+  const change=document.getElementById('changeBtn');
+  if(state.view==='team'){
+    if(change)change.style.visibility='hidden';
+    document.getElementById('whoName').textContent='Équipe globale';
+    document.getElementById('whoSub').textContent=`${state.people.filter(n=>!SPECIAL.test(n)).length} personnes`;
+    renderTeam();return;
+  }
+  if(change)change.style.visibility='visible';
   if(!state.current){document.getElementById('content').innerHTML='';return;}
   const all=personEntries();
   document.getElementById('whoName').textContent=state.current;
@@ -633,6 +759,56 @@ function renderMain(){
   if(state.view==='week')renderWeek();
   else if(state.view==='agenda')renderAgenda();
   else renderMonth();
+}
+
+/* TEAM (vue équipe globale, codes couleur) */
+function renderTeam(){
+  const c=document.getElementById('content');
+  const mon=startOfWeek(state.cursor),fri=addDays(mon,4);
+  const lbl=mon.getMonth()===fri.getMonth()
+    ?`${mon.getDate()} – ${fri.getDate()} ${MONTHS[mon.getMonth()]} ${mon.getFullYear()}`
+    :`${mon.getDate()} ${MONTHS[mon.getMonth()]} – ${fri.getDate()} ${MONTHS[fri.getMonth()]} ${fri.getFullYear()}`;
+  document.getElementById('periodLbl').textContent='Semaine du '+lbl;
+  const today=new Date();
+  // légende
+  const reals=state.people.filter(n=>!SPECIAL.test(n));
+  let leg='<div class="team-legend">';
+  for(const n of reals)leg+=`<span class="lg"><span class="dot" style="background:${state.color.get(n)}"></span>${esc(n)}</span>`;
+  leg+='</div>';
+  let html='<div class="team-wrap">'+leg;
+  let scrollId=null;
+  for(let i=0;i<5;i++){
+    const d=addDays(mon,i);
+    const dayEntries=state.entries.filter(e=>sameDay(e.date,d)).sort((a,b)=>{
+      const pa=reals.indexOf(a.nom),pb=reals.indexOf(b.nom);return (pa<0?99:pa)-(pb<0?99:pb);});
+    const isT=sameDay(d,today);if(isT)scrollId='team'+i;
+    html+=`<div class="team-day${isT?' is-today':''}"${isT?' id="team'+i+'"':''}>
+      <div class="team-day-h"><span class="tdn">${d.getDate()}</span><span class="tdw">${WD_NAMES[i]}</span><span class="tdc">${dayEntries.length} aff.</span></div>`;
+    if(!dayEntries.length){html+='<div class="team-rows"><div class="wcol-empty">Personne ce jour</div></div>';}
+    else{
+      html+='<div class="team-rows">';
+      for(const e of dayEntries){
+        const col=state.color.get(e.nom)||'#8a93a6';
+        const label=e.lib||e.section||e.com.slice(0,60)||'Affectation';
+        const t=fmtTime(e.date);
+        html+=`<div class="trow" data-id="${e._id}">
+          <span class="tp"><span class="pdot" style="background:${col}"></span><span class="pn">${esc(e.nom)}</span></span>
+          <span class="tlabel" style="background:linear-gradient(145deg,${col},${shade(col,-22)})">${esc(label)}${(e.tache||t)?`<span class="tt">${esc(e.tache||'')}${e.tache&&t?' · ':''}${t}</span>`:''}</span>
+        </div>`;
+      }
+      html+='</div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  c.innerHTML=html;
+  c.querySelectorAll('.trow').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
+  if(scrollId){const t=document.getElementById(scrollId);if(t)setTimeout(()=>t.scrollIntoView({behavior:'auto',block:'start'}),50);}
+}
+function shade(hex,pct){
+  const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.max(0,Math.min(255,r+Math.round(255*pct/100)));g=Math.max(0,Math.min(255,g+Math.round(255*pct/100)));b=Math.max(0,Math.min(255,b+Math.round(255*pct/100)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 
 /* WEEK (Mon-Fri) */
@@ -859,9 +1035,35 @@ function showApp(){
   document.getElementById('app').style.display='grid';
   ['searchTop','settingsTop','clock'].forEach(id=>document.getElementById(id).style.display='flex');
   syncNav();renderStats();renderPeople();
-  showPicker(); // à l'ouverture, demander qui afficher
+  // favori : si défini et présent dans les données -> affichage direct
+  const fav=lsGet('fav_person');
+  if(fav&&state.byPerson.has(fav)){state.fav=fav;selectPerson(fav);return;}
+  // pas encore choisi -> proposer l'écran de sélection du favori (1re fois)
+  if(!lsGet('fav_asked')){showFavPicker();return;}
+  showPicker(); // sinon, demander qui afficher
 }
 function syncNav(){document.getElementById('periodNav').style.display='flex';}
+
+/* ---- écran favori (1re ouverture) ---- */
+function showFavPicker(){renderFavList();document.getElementById('fav').classList.add('show');
+  setTimeout(()=>{const s=document.getElementById('favSearch');if(window.matchMedia('(min-width:901px)').matches)s.focus();},60);}
+function hideFavPicker(){document.getElementById('fav').classList.remove('show');}
+function renderFavList(){
+  const q=normKey(document.getElementById('favSearch').value);
+  const box=document.getElementById('favList');box.innerHTML='';let n=0;
+  for(const name of state.people){
+    if(SPECIAL.test(name))continue;
+    if(q&&!normKey(name).includes(q))continue;n++;
+    const b=document.createElement('button');b.className='pick-item';
+    b.innerHTML=`<span class="av">${initials(name)}</span><span class="pick-name">${esc(name)}</span>
+      <svg class="fav-star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.3 6.2 21l1.6-6.6L2.5 9.9l6.8-.6L12 3l2.7 6.3 6.8.6-5.3 4.5 1.6 6.6z"/></svg>`;
+    b.onclick=()=>{lsSet('fav_person',name);lsSet('fav_asked','1');state.fav=name;hideFavPicker();updateFavLabel();selectPerson(name);};
+    box.appendChild(b);
+  }
+  if(!n)box.innerHTML='<div style="padding:30px;color:var(--soft);text-align:center">Aucun résultat</div>';
+}
+function updateFavLabel(){const el=document.getElementById('favCurrent');if(!el)return;
+  el.textContent=state.fav?`Favori actuel : ${state.fav}. Il s'affiche automatiquement à l'ouverture.`:"Aucun favori. Choisissez votre nom pour l'afficher directement à l'ouverture.";}
 
 /* ---- écran de sélection de personne ---- */
 function showPicker(){
@@ -874,7 +1076,7 @@ function showPicker(){
 function hidePicker(){document.getElementById('picker').classList.remove('show');}
 /* navigation par onglets (mobile) + écrans */
 function setTab(t){document.querySelectorAll('#bottomNav .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));}
-function showSettings(){document.getElementById('searchOv').classList.remove('show');document.getElementById('settings').classList.add('show');setTab('settings');}
+function showSettings(){document.getElementById('searchOv').classList.remove('show');updateFavLabel();document.getElementById('settings').classList.add('show');setTab('settings');}
 function hideSettings(){document.getElementById('settings').classList.remove('show');}
 function goPlanning(){hideSettings();document.getElementById('searchOv').classList.remove('show');setTab('plan');if(!state.current)showPicker();}
 function openSearch(){document.getElementById('settings').classList.remove('show');document.getElementById('searchOv').classList.add('show');setTab('search');setTimeout(()=>document.getElementById('gSearch').focus(),50);}
@@ -968,8 +1170,8 @@ document.getElementById('viewSeg').onclick=e=>{const b=e.target.closest('button'
 
 // recale le curseur sur aujourd'hui si la plage de données le contient, sinon sur l'affectation la plus proche
 function recenterToday(){
-  const arr=personEntries();if(!arr.length)return;
-  const today=new Date();const ds=arr.map(e=>e.date);
+  const arr=(state.view==='team'?state.entries:personEntries());if(!arr.length)return;
+  const today=new Date();const ds=arr.map(e=>e.date).sort((a,b)=>a-b);
   if(today>=ds[0]&&today<=ds[ds.length-1]){state.cursor=today;return;}
   const tMid=new Date(today.getFullYear(),today.getMonth(),today.getDate());
   let best=ds[0],bd=Infinity;for(const d of ds){const diff=Math.abs(d-tMid);if(diff<bd){bd=diff;best=d;}}
@@ -977,7 +1179,7 @@ function recenterToday(){
 }
 
 function step(dir){
-  if(state.view==='week')state.cursor=addDays(startOfWeek(state.cursor),dir*7);
+  if(state.view==='week'||state.view==='team')state.cursor=addDays(startOfWeek(state.cursor),dir*7);
   else if(state.view==='month')state.cursor=new Date(state.cursor.getFullYear(),state.cursor.getMonth()+dir,1);
   renderMain();
 }
@@ -1019,14 +1221,35 @@ document.querySelectorAll('#bottomNav .tab').forEach(b=>b.onclick=()=>{
 document.getElementById('setUpdate').onclick=()=>document.getElementById('file').click();
 document.getElementById('setExport').onclick=exportForWeb;
 document.getElementById('setClose').onclick=goPlanning;
+document.getElementById('setFav').onclick=()=>{hideSettings();showFavPicker();};
+
+/* écran favori */
+document.getElementById('favSearch').oninput=renderFavList;
+document.getElementById('favSkip').onclick=()=>{lsSet('fav_asked','1');hideFavPicker();showPicker();};
 
 // PWA : service worker pour installation + hors-ligne
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
 }
 
-// chargement automatique des données intégrées au site
-autoLoad();
+/* ---- Verrou par mot de passe (mémorisé sur l'appareil) ---- */
+function startApp(){ autoLoad(); }
+function tryUnlock(){
+  const v=document.getElementById('lockInput').value;
+  if(v===PASSWORD){lsSet('unlocked','1');document.getElementById('lock').classList.remove('show');startApp();}
+  else{const er=document.getElementById('lockErr');er.textContent='Code incorrect.';document.getElementById('lockInput').value='';
+    const card=document.querySelector('.lock-card');card.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:240});}
+}
+document.getElementById('lockGo').onclick=tryUnlock;
+document.getElementById('lockInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+document.getElementById('lockShow').onclick=()=>{const i=document.getElementById('lockInput');i.type=i.type==='password'?'text':'password';};
+
+if(lsGet('unlocked')==='1'){
+  startApp();
+}else{
+  document.getElementById('lock').classList.add('show');
+  setTimeout(()=>{if(window.matchMedia('(min-width:901px)').matches)document.getElementById('lockInput').focus();},80);
+}
 
 </script>
 </body>
