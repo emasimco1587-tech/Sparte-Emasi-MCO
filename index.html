@@ -18,14 +18,14 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#070d1a;--bg2:#0b1426;--ink:#eaf1ff;--soft:#9fb2d4;--faint:#6b7ea3;
-  --line:rgba(120,150,200,.16);--line-2:rgba(120,150,200,.28);
-  --glass:rgba(20,32,58,.55);--glass-2:rgba(28,44,78,.45);--glass-hi:rgba(120,170,255,.10);
-  --blue:#3b82f6;--blue-2:#60a5fa;--blue-d:#1e3a8a;--blue-glow:rgba(59,130,246,.45);
-  --cyan:#22d3ee;--accent:#38bdf8;
-  --r:18px;--rs:13px;--nav-h:66px;
-  --sh:0 8px 30px -10px rgba(0,0,0,.6);
-  --sh-glow:0 0 0 1px rgba(120,170,255,.10),0 10px 40px -12px rgba(20,60,140,.55);
+  --bg:#000308;--bg2:#0a1018;--ink:#f5f7fb;--soft:#aeb8c8;--faint:#7c8595;
+  --line:rgba(255,255,255,.10);--line-2:rgba(255,255,255,.18);
+  --glass:rgba(40,46,58,.42);--glass-2:rgba(56,64,80,.34);--glass-hi:rgba(255,255,255,.07);
+  --blue:#0a84ff;--blue-2:#409cff;--blue-d:#0060df;--blue-glow:rgba(10,132,255,.5);
+  --cyan:#64d2ff;--accent:#0a84ff;
+  --r:22px;--rs:16px;--nav-h:66px;
+  --sh:0 8px 32px -12px rgba(0,0,0,.7);
+  --sh-glow:0 0 0 .5px rgba(255,255,255,.12),0 12px 40px -14px rgba(0,0,0,.7);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
@@ -33,10 +33,11 @@ html,body{height:100%;overflow-x:hidden;width:100%}
 body{font-family:'Manrope',system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;touch-action:manipulation;
   background:var(--bg);
   background-image:
-    radial-gradient(900px 600px at 110% -10%,rgba(56,189,248,.16),transparent 55%),
-    radial-gradient(800px 600px at -10% 110%,rgba(59,130,246,.18),transparent 55%),
-    radial-gradient(700px 500px at 50% 50%,rgba(34,211,238,.05),transparent 60%),
-    linear-gradient(180deg,#070d1a,#060a14);
+    radial-gradient(700px 500px at 100% -8%,rgba(10,132,255,.34),transparent 56%),
+    radial-gradient(680px 520px at -8% 8%,rgba(100,210,255,.20),transparent 56%),
+    radial-gradient(720px 560px at 50% 116%,rgba(10,132,255,.26),transparent 56%),
+    radial-gradient(500px 400px at 88% 92%,rgba(175,82,222,.16),transparent 60%),
+    linear-gradient(180deg,#000308,#04070d);
   background-attachment:fixed;}
 .serif{font-family:'Fraunces',serif}
 .mono{font-family:'IBM Plex Mono',monospace}
@@ -44,12 +45,12 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 input{font-family:inherit}
 
 /* glass utility */
-.glass{background:var(--glass);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--line);box-shadow:var(--sh)}
+.glass{background:var(--glass);backdrop-filter:blur(30px) saturate(1.8) brightness(1.12);-webkit-backdrop-filter:blur(30px) saturate(1.8) brightness(1.12);border:1px solid var(--line);box-shadow:var(--sh)}
 
 /* ---------- top bar ---------- */
 header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;
   padding:11px 20px;padding-top:max(11px,env(safe-area-inset-top));
-  background:rgba(8,14,28,.6);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  background:rgba(10,14,22,.55);backdrop-filter:blur(34px) saturate(1.8) brightness(1.1);-webkit-backdrop-filter:blur(34px) saturate(1.8) brightness(1.1);
   border-bottom:1px solid var(--line);}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .logo{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;color:#fff;position:relative;overflow:hidden;
@@ -83,7 +84,7 @@ header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px
 /* ---------- empty / import ---------- */
 #empty{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);padding:34px}
 .drop{width:min(620px,94vw);text-align:center;padding:48px 34px;border-radius:26px;
-  background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+  background:var(--glass);backdrop-filter:blur(40px) saturate(1.9) brightness(1.15);-webkit-backdrop-filter:blur(40px) saturate(1.9) brightness(1.15);
   border:1px solid var(--line);box-shadow:var(--sh-glow);transition:.2s}
 .drop.drag{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue),var(--sh-glow);transform:scale(1.01)}
 .drop .ic{width:64px;height:64px;margin:0 auto 20px;border-radius:20px;display:grid;place-items:center;color:#fff;
@@ -100,7 +101,7 @@ header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px
 
 /* ---------- app shell ---------- */
 #app{display:none;grid-template-columns:300px 1fr;min-height:calc(100vh - 64px)}
-aside{border-right:1px solid var(--line);background:rgba(11,20,38,.5);backdrop-filter:blur(16px);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px)}
+aside{border-right:1px solid var(--line);background:rgba(14,18,28,.45);backdrop-filter:blur(30px) saturate(1.7) brightness(1.1);-webkit-backdrop-filter:blur(30px) saturate(1.7) brightness(1.1);display:flex;flex-direction:column;position:sticky;top:64px;height:calc(100vh - 64px)}
 .side-head{padding:16px 14px 10px}
 .search{position:relative}
 .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint)}
@@ -122,7 +123,7 @@ aside{border-right:1px solid var(--line);background:rgba(11,20,38,.5);backdrop-f
 
 main{display:flex;flex-direction:column;min-width:0}
 .toolbar{display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding:14px 24px;border-bottom:1px solid var(--line);
-  background:rgba(8,14,28,.5);backdrop-filter:blur(16px);position:sticky;top:64px;z-index:20}
+  background:rgba(10,14,22,.42);backdrop-filter:blur(30px) saturate(1.7) brightness(1.1);-webkit-backdrop-filter:blur(30px) saturate(1.7) brightness(1.1);position:sticky;top:64px;z-index:20}
 .who{display:flex;align-items:center;gap:11px;min-width:0}
 .who-txt{min-width:0}
 .who h2{font-family:'Fraunces';font-size:20px;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -154,7 +155,7 @@ main{display:flex;flex-direction:column;min-width:0}
 .day-date .dw{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);margin-top:6px}
 .cards{display:flex;flex-direction:column;gap:10px;min-width:0}
 .card{border-radius:var(--r);padding:14px 16px;transition:.14s;cursor:pointer;position:relative;overflow:hidden;
-  background:var(--glass);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line);box-shadow:var(--sh)}
+  background:var(--glass);backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);-webkit-backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);border:1px solid var(--line);box-shadow:var(--sh)}
 .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--blue-2),var(--blue-d))}
 .card:hover{border-color:var(--line-2);box-shadow:var(--sh-glow);transform:translateY(-1px)}
 .card:active{transform:scale(.995)}
@@ -171,7 +172,7 @@ main{display:flex;flex-direction:column;min-width:0}
 /* week */
 .week{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start}
 .wcol{border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;min-height:130px;
-  background:var(--glass);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--line);box-shadow:var(--sh)}
+  background:var(--glass);backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);-webkit-backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);border:1px solid var(--line);box-shadow:var(--sh)}
 .wcol.today{border-color:rgba(120,170,255,.4);box-shadow:var(--sh-glow)}
 .wcol-h{padding:11px 13px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:8px;background:var(--glass-hi)}
 .wcol.today .wcol-h{background:linear-gradient(145deg,rgba(59,130,246,.9),rgba(30,58,138,.8));color:#fff;border-color:transparent}
@@ -204,7 +205,7 @@ main{display:flex;flex-direction:column;min-width:0}
 
 /* picker + settings */
 #picker,#settings{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;
-  background:rgba(7,12,24,.7);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);
+  background:rgba(8,12,20,.62);backdrop-filter:blur(50px) saturate(1.9) brightness(1.12);-webkit-backdrop-filter:blur(50px) saturate(1.9) brightness(1.12);
   background-image:radial-gradient(800px 460px at 110% -8%,rgba(56,189,248,.16),transparent 58%),radial-gradient(700px 460px at -10% 110%,rgba(59,130,246,.18),transparent 58%);}
 #picker.show,#settings.show{display:flex;animation:fade .22s ease}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -246,7 +247,7 @@ main{display:flex;flex-direction:column;min-width:0}
 
 /* bottom nav */
 #bottomNav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:60;
-  background:rgba(8,14,28,.72);backdrop-filter:saturate(1.4) blur(20px);-webkit-backdrop-filter:saturate(1.4) blur(20px);border-top:1px solid var(--line);
+  background:rgba(10,14,22,.6);backdrop-filter:saturate(1.9) blur(40px) brightness(1.1);-webkit-backdrop-filter:saturate(1.9) blur(40px) brightness(1.1);border-top:1px solid var(--line);
   padding:8px 8px calc(8px + env(safe-area-inset-bottom));}
 #bottomNav .row{display:flex;max-width:680px;margin:0 auto}
 #bottomNav .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border-radius:13px;color:var(--soft);font-size:10.5px;font-weight:700;transition:.12s}
@@ -260,7 +261,7 @@ main{display:flex;flex-direction:column;min-width:0}
 .ov{position:fixed;inset:0;background:rgba(4,8,18,.6);backdrop-filter:blur(6px);z-index:70;display:none;align-items:center;justify-content:center;padding:40px 18px}
 .ov.show{display:flex;animation:fade .15s ease}
 .modal{width:min(660px,100%);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;max-height:86vh;
-  background:rgba(13,22,42,.8);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);border:1px solid var(--line-2);box-shadow:0 30px 80px -20px rgba(0,0,0,.8),var(--sh-glow)}
+  background:rgba(30,36,48,.55);backdrop-filter:blur(50px) saturate(1.9) brightness(1.15);-webkit-backdrop-filter:blur(50px) saturate(1.9) brightness(1.15);border:1px solid var(--line-2);box-shadow:0 30px 80px -20px rgba(0,0,0,.8),var(--sh-glow)}
 .modal-h{padding:17px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:var(--glass-hi)}
 .modal-h h3{font-family:'Fraunces';font-size:17px}
 .modal-h .x{margin-left:auto;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:var(--soft);background:var(--glass-2);border:1px solid var(--line)}
@@ -676,14 +677,18 @@ function renderAgenda(){
   if(!arr.length){c.innerHTML=emptyMsg();return;}
   const byMonth=new Map();
   for(const e of arr){const k=e.date.getFullYear()*12+e.date.getMonth();if(!byMonth.has(k))byMonth.set(k,[]);byMonth.get(k).push(e);}
-  const today=new Date();let html='';let todayId=null;
+  const today=new Date();const todayMid=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  let html='';let exactTodayId=null;
+  // repérer le jour le plus proche d'aujourd'hui (pour recaler le défilement même sans affectation aujourd'hui)
+  let nearest=null,nearestDiff=Infinity;
+  for(const e of arr){const d=new Date(e.date.getFullYear(),e.date.getMonth(),e.date.getDate());const diff=Math.abs(d-todayMid);if(diff<nearestDiff){nearestDiff=diff;nearest=dKey(e.date);}}
   for(const[mk,evs]of byMonth){
     const y=Math.floor(mk/12),mo=mk%12;
     html+=`<div class="month-h"><h3>${MONTHS[mo]} ${y}</h3><div class="ln"></div><span class="cnt">${evs.length} entrée${evs.length>1?'s':''}</span></div>`;
     const byDay=new Map();
     for(const e of evs){const dk=dKey(e.date);if(!byDay.has(dk))byDay.set(dk,[]);byDay.get(dk).push(e);}
     for(const[,des]of byDay){
-      const d=des[0].date;const isT=sameDay(d,today);if(isT)todayId='d'+dKey(d);
+      const d=des[0].date;const isT=sameDay(d,today);if(isT)exactTodayId='d'+dKey(d);
       html+=`<div class="day${isT?' is-today':''}" id="d${dKey(d)}"><div class="day-date"><div class="dn">${d.getDate()}</div><div class="dw">${DOW[d.getDay()]}</div></div><div class="cards">`;
       for(const e of des)html+=cardHTML(e);
       html+=`</div></div>`;
@@ -691,7 +696,9 @@ function renderAgenda(){
   }
   c.innerHTML=html;
   c.querySelectorAll('.card').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
-  if(todayId){const t=document.getElementById(todayId);if(t)setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}),60);}
+  // défiler vers aujourd'hui, sinon vers le jour le plus proche
+  const targetId=exactTodayId||(nearest?'d'+nearest:null);
+  if(targetId){const t=document.getElementById(targetId);if(t)setTimeout(()=>t.scrollIntoView({behavior:'auto',block:'center'}),50);}
 }
 
 function cardHTML(e){
@@ -725,7 +732,7 @@ function renderMonth(){
   for(let dd=1;dd<=days;dd++){
     const date=new Date(y,m,dd);if(isWE(date))continue;
     const isT=sameDay(date,today);const evs=byDay.get(dd)||[];
-    html+=`<div class="cell${isT?' today':''}"><div class="cd">${dd} ${DOW[date.getDay()]}</div>`;
+    html+=`<div class="cell${isT?' today':''}"${isT?' id="monthToday"':''}><div class="cd">${dd} ${DOW[date.getDay()]}${isT?" · auj.":''}</div>`;
     evs.slice(0,4).forEach((e,i)=>{const label=e.lib||e.section||e.com.slice(0,40)||'Affectation';html+=`<div class="ev${i%2?' alt':''}" data-id="${e._id}" title="${esc(label)}">${esc(label)}</div>`;});
     if(evs.length>4)html+=`<div class="ev more" data-day="${dd}">+${evs.length-4} autres</div>`;
     html+='</div>';
@@ -735,6 +742,7 @@ function renderMonth(){
   c.innerHTML=html;
   c.querySelectorAll('.ev[data-id]').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
   c.querySelectorAll('.ev[data-day]').forEach(el=>el.onclick=()=>openDay(+el.dataset.day,y,m));
+  const mt=document.getElementById('monthToday');if(mt)setTimeout(()=>mt.scrollIntoView({behavior:'auto',block:'center'}),50);
 }
 
 function emptyMsg(){return `<div class="empty-msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Aucune affectation${state.q?' ne correspond au filtre':''} pour cette personne.</div>`;}
@@ -956,7 +964,17 @@ const drop=document.getElementById('drop');
 drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)readFile(f);});
 
 document.getElementById('pSearch').oninput=renderPeople;
-document.getElementById('viewSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.view=b.dataset.v;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));renderMain();};
+document.getElementById('viewSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.view=b.dataset.v;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));recenterToday();renderMain();};
+
+// recale le curseur sur aujourd'hui si la plage de données le contient, sinon sur l'affectation la plus proche
+function recenterToday(){
+  const arr=personEntries();if(!arr.length)return;
+  const today=new Date();const ds=arr.map(e=>e.date);
+  if(today>=ds[0]&&today<=ds[ds.length-1]){state.cursor=today;return;}
+  const tMid=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  let best=ds[0],bd=Infinity;for(const d of ds){const diff=Math.abs(d-tMid);if(diff<bd){bd=diff;best=d;}}
+  state.cursor=new Date(best);
+}
 
 function step(dir){
   if(state.view==='week')state.cursor=addDays(startOfWeek(state.cursor),dir*7);
@@ -965,7 +983,7 @@ function step(dir){
 }
 document.getElementById('prev').onclick=()=>step(-1);
 document.getElementById('next').onclick=()=>step(1);
-document.getElementById('todayBtn').onclick=()=>{state.cursor=new Date();if(state.view==='agenda'){renderAgenda();}else renderMain();};
+document.getElementById('todayBtn').onclick=()=>{recenterToday();renderMain();};
 
 document.getElementById('searchTop').onclick=openSearch;
 document.getElementById('searchClose').onclick=()=>{document.getElementById('searchOv').classList.remove('show');setTab('plan');};
