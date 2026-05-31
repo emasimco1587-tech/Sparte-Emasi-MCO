@@ -413,7 +413,31 @@ main{display:flex;flex-direction:column;min-width:0}
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;align-self:center}
 .trow .tlabel .tt{font-family:'IBM Plex Mono';font-size:10px;opacity:.85;display:block;margin-top:2px}
 
-/* ===== Effet verre givré (reflet + grain) ===== */
+/* badge multi-jours */
+.multi-badge{display:inline-flex;align-items:center;gap:6px;margin:2px 0 7px;font-size:11px;font-weight:700;color:var(--blue-2);background:rgba(10,132,255,.14);border:1px solid rgba(10,132,255,.28);padding:3px 9px;border-radius:8px}
+.multi-badge svg{width:12px;height:12px}
+.card.is-multi::before{background:linear-gradient(var(--cyan),var(--blue))}
+
+/* affinage thème clair */
+html[data-theme="light"] .glass-card::after,
+html[data-theme="light"] .card::after,
+html[data-theme="light"] .wcol::after,
+html[data-theme="light"] .team-day::after,
+html[data-theme="light"] .modal::after{background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,0));opacity:.9}
+html[data-theme="light"] .tag{background:rgba(10,132,255,.12);color:#0060df}
+html[data-theme="light"] .team-pill{background:rgba(10,132,255,.12);color:#0060df}
+html[data-theme="light"] .multi-badge{color:#0060df}
+html[data-theme="light"] .av{background:rgba(10,132,255,.14);color:#0060df}
+html[data-theme="light"] .seg button.on,
+html[data-theme="light"] .person.active,
+html[data-theme="light"] .today-btn,
+html[data-theme="light"] #bottomNav .tab.on .tab-ic{color:#fff}
+html[data-theme="light"] #bottomNav{background:rgba(255,255,255,.82)}
+html[data-theme="light"] .modal{background:rgba(255,255,255,.86)}
+html[data-theme="light"] #picker,html[data-theme="light"] #settings,html[data-theme="light"] #fav{background:rgba(238,242,248,.82)}
+html[data-theme="light"] #lock{background:rgba(238,242,248,.7)}
+html[data-theme="light"] #lockErr{color:#d11}
+html[data-theme="light"] .ev,html[data-theme="light"] .trow .tlabel{color:#fff}
 .glass-card,.card,.wcol,.team-day,.set-card,.modal,.lock-card,.pick-item{position:relative}
 .glass-card::after,.card::after,.wcol::after,.team-day::after,.modal::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;
   background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0));pointer-events:none;border-radius:inherit;opacity:.7}
@@ -705,7 +729,7 @@ const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cu
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
-const APP_VERSION="v9";
+const APP_VERSION="v10";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -722,6 +746,17 @@ const SPECIAL=/^(a re-planifier|vacance|chgt |bdc_|emasi mco site)/i;
 function startOfWeek(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());let g=x.getDay();g=g===0?6:g-1;x.setDate(x.getDate()-g);return x;}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
 function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+// une affectation peut couvrir plusieurs jours (Date de début -> Date de fin)
+function dayStart(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function coversDay(e,d){
+  const s=dayStart(e.date);
+  const f=e.end?dayStart(e.end):s;
+  const t=dayStart(d);
+  return t>=s&&t<=f;
+}
+function isMultiDay(e){return e.end&&dayStart(e.end)>dayStart(e.date);}
+// renvoie les affectations d'une liste présentes le jour d (couverture multi-jours incluse)
+function entriesOnDay(list,d){return list.filter(e=>coversDay(e,d));}
 
 function toDate(v){
   if(v==null||v==='')return null;
@@ -869,11 +904,11 @@ function renderToday(){
   const today=new Date();
   const all=personEntries();
   // interventions du jour ; sinon prochaine échéance
-  let dayItems=all.filter(e=>sameDay(e.date,today));
+  let dayItems=entriesOnDay(all,today);
   let isFuture=false,refDate=today;
   if(!dayItems.length){
     const upcoming=all.filter(e=>e.date>=new Date(today.getFullYear(),today.getMonth(),today.getDate())).sort((a,b)=>a.date-b.date);
-    if(upcoming.length){refDate=upcoming[0].date;dayItems=all.filter(e=>sameDay(e.date,refDate));isFuture=true;}
+    if(upcoming.length){refDate=upcoming[0].date;dayItems=entriesOnDay(all,refDate);isFuture=true;}
   }
   const dStr=`${DOW_FULL[refDate.getDay()]} ${refDate.getDate()} ${MONTHS[refDate.getMonth()]}`;
   let html='<div class="today-wrap">';
@@ -922,7 +957,7 @@ function renderTeam(){
   let scrollId=null;
   for(let i=0;i<5;i++){
     const d=addDays(mon,i);
-    const dayEntries=state.entries.filter(e=>sameDay(e.date,d)).sort((a,b)=>{
+    const dayEntries=entriesOnDay(state.entries,d).sort((a,b)=>{
       const pa=reals.indexOf(a.nom),pb=reals.indexOf(b.nom);return (pa<0?99:pa)-(pb<0?99:pb);});
     const isT=sameDay(d,today);if(isT)scrollId='team'+i;
     html+=`<div class="team-day${isT?' is-today':''}"${isT?' id="team'+i+'"':''}>
@@ -967,7 +1002,7 @@ function renderWeek(){
   let html='<div class="week">';
   for(let i=0;i<5;i++){
     const d=addDays(mon,i);
-    const evs=all.filter(e=>sameDay(e.date,d));
+    const evs=entriesOnDay(all,d);
     const isT=sameDay(d,today);
     html+=`<div class="wcol${isT?' today':''}"><div class="wcol-h"><span class="wd">${WD_NAMES[i]}</span><span class="dn">${d.getDate()}</span></div><div class="wcol-b">`;
     if(!evs.length)html+='<div class="wcol-empty">—</div>';
@@ -990,46 +1025,63 @@ function renderWeek(){
 function renderAgenda(){
   const c=document.getElementById('content');
   document.getElementById('periodLbl').textContent='Toute l\'année';
-  let arr=personEntries().filter(e=>!isWE(e.date));
+  let base=personEntries();
   const q=normKey(state.q);
-  if(q)arr=arr.filter(e=>normKey(e.lib+' '+e.com+' '+e.section+' '+e.tache).includes(q));
-  if(!arr.length){c.innerHTML=emptyMsg();return;}
+  if(q)base=base.filter(e=>normKey(e.lib+' '+e.com+' '+e.section+' '+e.tache).includes(q));
+  // étaler chaque affectation sur tous ses jours ouvrés (multi-jours), week-ends exclus
+  const occ=[];
+  for(const e of base){
+    const s=dayStart(e.date),f=e.end?dayStart(e.end):s;
+    for(let d=new Date(s);d<=f;d.setDate(d.getDate()+1)){
+      if(isWE(d))continue;
+      occ.push({e,day:new Date(d)});
+    }
+  }
+  if(!occ.length){c.innerHTML=emptyMsg();return;}
+  occ.sort((a,b)=>a.day-b.day);
   const byMonth=new Map();
-  for(const e of arr){const k=e.date.getFullYear()*12+e.date.getMonth();if(!byMonth.has(k))byMonth.set(k,[]);byMonth.get(k).push(e);}
-  const today=new Date();const todayMid=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  for(const o of occ){const k=o.day.getFullYear()*12+o.day.getMonth();if(!byMonth.has(k))byMonth.set(k,[]);byMonth.get(k).push(o);}
+  const today=new Date();const todayMid=dayStart(today);
   let html='';let exactTodayId=null;
-  // repérer le jour le plus proche d'aujourd'hui (pour recaler le défilement même sans affectation aujourd'hui)
   let nearest=null,nearestDiff=Infinity;
-  for(const e of arr){const d=new Date(e.date.getFullYear(),e.date.getMonth(),e.date.getDate());const diff=Math.abs(d-todayMid);if(diff<nearestDiff){nearestDiff=diff;nearest=dKey(e.date);}}
-  for(const[mk,evs]of byMonth){
+  for(const o of occ){const diff=Math.abs(o.day-todayMid);if(diff<nearestDiff){nearestDiff=diff;nearest=dKey(o.day);}}
+  for(const[mk,list]of byMonth){
     const y=Math.floor(mk/12),mo=mk%12;
-    html+=`<div class="month-h"><h3>${MONTHS[mo]} ${y}</h3><div class="ln"></div><span class="cnt">${evs.length} entrée${evs.length>1?'s':''}</span></div>`;
+    html+=`<div class="month-h"><h3>${MONTHS[mo]} ${y}</h3><div class="ln"></div><span class="cnt">${list.length} entrée${list.length>1?'s':''}</span></div>`;
     const byDay=new Map();
-    for(const e of evs){const dk=dKey(e.date);if(!byDay.has(dk))byDay.set(dk,[]);byDay.get(dk).push(e);}
+    for(const o of list){const dk=dKey(o.day);if(!byDay.has(dk))byDay.set(dk,[]);byDay.get(dk).push(o);}
     for(const[,des]of byDay){
-      const d=des[0].date;const isT=sameDay(d,today);if(isT)exactTodayId='d'+dKey(d);
+      const d=des[0].day;const isT=sameDay(d,today);if(isT)exactTodayId='d'+dKey(d);
       html+=`<div class="day${isT?' is-today':''}" id="d${dKey(d)}"><div class="day-date"><div class="dn">${d.getDate()}</div><div class="dw">${DOW[d.getDay()]}</div></div><div class="cards">`;
-      for(const e of des)html+=cardHTML(e);
+      for(const o of des)html+=cardHTML(o.e,o.day);
       html+=`</div></div>`;
     }
   }
   c.innerHTML=html;
   c.querySelectorAll('.card').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
-  // défiler vers aujourd'hui, sinon vers le jour le plus proche
   const targetId=exactTodayId||(nearest?'d'+nearest:null);
   if(targetId){const t=document.getElementById(targetId);if(t)setTimeout(()=>t.scrollIntoView({behavior:'auto',block:'center'}),50);}
 }
 
-function cardHTML(e){
+function cardHTML(e,occDay){
   const t=fmtTime(e.date),tEnd=fmtTime(e.end);
   const timeStr=t?(tEnd?`${t} – ${tEnd}`:t):'';
   const tm=teammates(e);
-  return `<div class="card" data-id="${e._id}">
+  let multiBadge='';
+  if(isMultiDay(e)){
+    const s=dayStart(e.date),f=dayStart(e.end);
+    const totalDays=Math.round((f-s)/86400000)+1;
+    let label=`${s.getDate()}/${s.getMonth()+1} → ${f.getDate()}/${f.getMonth()+1}`;
+    if(occDay){const idx=Math.round((dayStart(occDay)-s)/86400000)+1;label=`Jour ${idx}/${totalDays} · `+label;}
+    multiBadge=`<span class="multi-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>${label}</span>`;
+  }
+  return `<div class="card${isMultiDay(e)?' is-multi':''}" data-id="${e._id}">
     <div class="card-top">
       ${e.section?`<span class="tag" title="${esc(e.section)}">${esc(e.section)}</span>`:''}
       ${timeStr?`<span class="time">${timeStr}</span>`:''}
     </div>
     ${e.lib?`<div class="lib">${esc(e.lib)}</div>`:(!e.com?'<div class="lib" style="color:var(--soft);font-weight:500">— sans libellé —</div>':'')}
+    ${multiBadge}
     ${e.com?`<div class="com">${esc(e.com)}</div>`:''}
     ${tm.length?`<div class="team-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Sur le terrain avec ${tm.length} personne${tm.length>1?'s':''}</div>`:''}
   </div>`;
@@ -1040,8 +1092,14 @@ function renderMonth(){
   const c=document.getElementById('content');
   const y=state.cursor.getFullYear(),m=state.cursor.getMonth();
   document.getElementById('periodLbl').textContent=`${MONTHS[m]} ${y}`;
-  const all=personEntries().filter(e=>e.date.getFullYear()===y&&e.date.getMonth()===m&&!isWE(e.date));
-  const byDay=new Map();for(const e of all){const k=e.date.getDate();if(!byDay.has(k))byDay.set(k,[]);byDay.get(k).push(e);}
+  const personAll=personEntries();
+  const byDay=new Map();
+  for(let dd=1;dd<=new Date(y,m+1,0).getDate();dd++){
+    const date=new Date(y,m,dd);if(isWE(date))continue;
+    const evs=entriesOnDay(personAll,date);
+    if(evs.length)byDay.set(dd,evs);
+  }
+  const all=personAll.filter(e=>{const s=dayStart(e.date),f=e.end?dayStart(e.end):s;return f>=new Date(y,m,1)&&s<=new Date(y,m+1,0);});
   let start=new Date(y,m,1).getDay();start=start===0?6:start-1;
   const days=new Date(y,m+1,0).getDate();const today=new Date();
   let html='<div class="cal">';
@@ -1070,7 +1128,9 @@ function emptyMsg(){return `<div class="empty-msg"><svg viewBox="0 0 24 24" fill
 function openAction(id){
   const e=state.entries[id];if(!e)return;
   const tm=teammates(e);
-  document.getElementById('modalTitle').textContent=`${DOW_FULL[e.date.getDay()]} ${e.date.getDate()} ${MONTHS[e.date.getMonth()]} ${e.date.getFullYear()}`;
+  let title=`${DOW_FULL[e.date.getDay()]} ${e.date.getDate()} ${MONTHS[e.date.getMonth()]} ${e.date.getFullYear()}`;
+  if(isMultiDay(e)){const f=e.end;title+=` → ${f.getDate()} ${MONTHS[f.getMonth()]}`;}
+  document.getElementById('modalTitle').textContent=title;
   const t=fmtTime(e.date),tEnd=fmtTime(e.end);const timeStr=t?(tEnd?`${t} – ${tEnd}`:t):'';
   let html='';
   html+=`<div>${e.section?`<span class="tag" style="display:inline-block;margin-bottom:8px">${esc(e.section)}</span>`:''}
@@ -1100,12 +1160,12 @@ function openAction(id){
   document.getElementById('overlay').classList.add('show');
 }
 function openDay(dd,y,m){
-  const arr=personEntries().filter(e=>e.date.getDate()===dd&&e.date.getMonth()===m&&e.date.getFullYear()===y);
-  if(arr.length===1){openAction(arr[0]._id);return;}
   const date=new Date(y,m,dd);
+  const arr=entriesOnDay(personEntries(),date);
+  if(arr.length===1){openAction(arr[0]._id);return;}
   document.getElementById('modalTitle').textContent=`${DOW_FULL[date.getDay()]} ${dd} ${MONTHS[m]} ${y}`;
   const body=document.getElementById('modalBody');
-  body.innerHTML=arr.map(e=>cardHTML(e)).join('')||'<p style="color:var(--soft)">Aucune entrée.</p>';
+  body.innerHTML=arr.map(e=>cardHTML(e,date)).join('')||'<p style="color:var(--soft)">Aucune entrée.</p>';
   body.querySelectorAll('.card').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
   document.getElementById('overlay').classList.add('show');
 }
