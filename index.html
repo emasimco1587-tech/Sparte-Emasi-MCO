@@ -389,15 +389,41 @@ main{display:flex;flex-direction:column;min-width:0}
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;align-self:center}
 .trow .tlabel .tt{font-family:'IBM Plex Mono';font-size:10px;opacity:.85;display:block;margin-top:2px}
 
+/* ===== Effet verre givré (reflet + grain) ===== */
+.glass-card,.card,.wcol,.team-day,.set-card,.modal,.lock-card,.pick-item{position:relative}
+.glass-card::after,.card::after,.wcol::after,.team-day::after,.modal::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0));pointer-events:none;border-radius:inherit;opacity:.7}
+.card::before{z-index:1}
+.glass-card,.today-hero,.today-card,.today-empty{border-radius:var(--r);
+  background:var(--glass);backdrop-filter:blur(34px) saturate(1.9) brightness(1.14);-webkit-backdrop-filter:blur(34px) saturate(1.9) brightness(1.14);
+  border:1px solid var(--line-2);box-shadow:var(--sh-glow)}
+
+/* ===== Ma journée ===== */
+.today-wrap{display:flex;flex-direction:column;gap:14px;max-width:760px}
+.today-hero{padding:20px 20px 18px;overflow:hidden}
+.th-top{display:flex;flex-direction:column;gap:2px}
+.th-hello{font-size:13px;color:var(--soft)}
+.th-name{font-family:'Fraunces';font-size:26px;line-height:1.05}
+.th-date{margin-top:12px;font-size:14px;color:var(--soft)}
+.th-date b{color:var(--blue-2);text-transform:capitalize}
+.today-card{padding:16px 17px;cursor:pointer;transition:.14s}
+.today-card:active{transform:scale(.995)}
+.today-card .tag{display:inline-block;margin-bottom:8px}
+.today-time{float:right;font-family:'IBM Plex Mono';font-size:12px;color:var(--soft)}
+.today-lib{font-family:'Fraunces';font-size:18px;line-height:1.3;margin-bottom:6px}
+.today-com{font-size:13.5px;line-height:1.6;color:var(--soft);white-space:pre-wrap;word-break:break-word;margin-bottom:12px}
+.today-team{border-top:1px solid var(--line);padding-top:12px}
+.today-team .tt-h{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--cyan);margin-bottom:9px}
+.today-team .tt-h svg{width:15px;height:15px}
+.today-team .tt-list{display:flex;flex-wrap:wrap;gap:8px}
+.today-empty{padding:34px 20px;text-align:center;color:var(--soft)}
+.today-empty svg{width:46px;height:46px;color:var(--line-2);margin:0 auto 12px;display:block}
+
 @media(max-width:900px){
-  /* barre du haut totalement vide sur mobile : seul le bouton retour flotte */
-  header{position:fixed;top:0;left:0;right:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:none;
-    padding:max(8px,env(safe-area-inset-top)) 12px 0;min-height:0;pointer-events:none}
-  #brandBox{display:none}
-  header .top-actions{display:none}
-  #backBtn{display:grid;pointer-events:auto;background:rgba(10,14,22,.55);backdrop-filter:blur(20px) saturate(1.7);-webkit-backdrop-filter:blur(20px) saturate(1.7)}
+  /* barre du haut totalement vide sur mobile : header masqué, espace récupéré */
+  header{display:none}
   main{min-height:auto}
-  .toolbar{position:sticky;top:0;padding:calc(max(8px,env(safe-area-inset-top)) + 50px) 14px 12px}
+  .toolbar{position:sticky;top:0;padding:calc(max(10px,env(safe-area-inset-top)) + 6px) 14px 12px}
   #app{min-height:100vh}
   .trow{grid-template-columns:118px 1fr;gap:8px}
 }
@@ -492,7 +518,8 @@ main{display:flex;flex-direction:column;min-width:0}
       </div>
       <div class="tb-right">
         <div class="seg" id="viewSeg">
-          <button data-v="week" class="on">Semaine</button>
+          <button data-v="today" class="on">Ma journée</button>
+          <button data-v="week">Semaine</button>
           <button data-v="agenda">Agenda</button>
           <button data-v="month">Mois</button>
           <button data-v="team">Équipe</button>
@@ -565,6 +592,12 @@ main{display:flex;flex-direction:column;min-width:0}
         </ol>
         <button class="btn btn-amber" id="setExport" style="margin-top:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Exporter pour le web</button>
       </div>
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.7 3L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.7-3L3 16"/><path d="M3 21v-5h5"/></svg>Données & actualisation</h3>
+        <p id="dataInfo">Dernière mise à jour : —</p>
+        <button class="btn btn-blue" id="setRefresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Rafraîchir (vider le cache)</button>
+      </div>
+      <p style="text-align:center;color:var(--faint);font-size:11px;margin-top:2px" id="appVersion">version —</p>
       <button class="btn btn-teal" id="setClose" style="justify-content:center;padding:13px">Retour au planning</button>
     </div>
   </div>
@@ -605,13 +638,15 @@ const DOW=['dim','lun','mar','mer','jeu','ven','sam'];
 const DOW_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
-const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null};
+const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:''};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
+const APP_VERSION="v7";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+function fmtToday(){const n=new Date();return `${String(n.getDate()).padStart(2,'0')}/${String(n.getMonth()+1).padStart(2,'0')}/${n.getFullYear()}`;}
 
 /* ---------- helpers ---------- */
 const norm=s=>(s==null?'':String(s)).trim();
@@ -756,9 +791,54 @@ function renderMain(){
   const all=personEntries();
   document.getElementById('whoName').textContent=state.current;
   document.getElementById('whoSub').textContent=`${all.length} affectation${all.length>1?'s':''} sur l'année`;
-  if(state.view==='week')renderWeek();
+  // la barre de navigation période n'a pas de sens en "Ma journée"
+  document.getElementById('periodNav').style.display=(state.view==='today')?'none':'flex';
+  if(state.view==='today')renderToday();
+  else if(state.view==='week')renderWeek();
   else if(state.view==='agenda')renderAgenda();
   else renderMonth();
+}
+
+/* MA JOURNÉE : résumé du jour pour la personne courante */
+function renderToday(){
+  const c=document.getElementById('content');
+  const today=new Date();
+  const all=personEntries();
+  // interventions du jour ; sinon prochaine échéance
+  let dayItems=all.filter(e=>sameDay(e.date,today));
+  let isFuture=false,refDate=today;
+  if(!dayItems.length){
+    const upcoming=all.filter(e=>e.date>=new Date(today.getFullYear(),today.getMonth(),today.getDate())).sort((a,b)=>a.date-b.date);
+    if(upcoming.length){refDate=upcoming[0].date;dayItems=all.filter(e=>sameDay(e.date,refDate));isFuture=true;}
+  }
+  const dStr=`${DOW_FULL[refDate.getDay()]} ${refDate.getDate()} ${MONTHS[refDate.getMonth()]}`;
+  let html='<div class="today-wrap">';
+  html+=`<div class="today-hero glass-card">
+    <div class="th-top"><span class="th-hello">Bonjour</span><span class="th-name">${esc(state.current)}</span></div>
+    <div class="th-date">${isFuture?'Prochaine intervention :':"Aujourd'hui"} <b>${dStr}</b></div>
+  </div>`;
+  if(!dayItems.length){
+    html+=`<div class="today-empty glass-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg><p>Aucune intervention à venir.</p></div>`;
+  }else{
+    for(const e of dayItems){
+      const t=fmtTime(e.date),tEnd=fmtTime(e.end);const timeStr=t?(tEnd?`${t} – ${tEnd}`:t):'';
+      const tm=teammates(e);
+      html+=`<div class="today-card glass-card" data-id="${e._id}">
+        ${e.section?`<span class="tag">${esc(e.section)}</span>`:''}
+        ${timeStr?`<span class="today-time">${timeStr}</span>`:''}
+        <div class="today-lib">${esc(e.lib||e.section||'Affectation')}</div>
+        ${e.com?`<div class="today-com">${esc(e.com)}</div>`:''}
+        <div class="today-team">
+          <div class="tt-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>${tm.length?`Sur le terrain avec ${tm.length} personne${tm.length>1?'s':''}`:'En autonomie'}</div>
+          ${tm.length?`<div class="tt-list">${tm.map(n=>`<span class="tmember" data-name="${esc(n)}"><span class="av" style="background:${(state.color.get(n)||'#8a93a6')}33;color:${state.color.get(n)||'#cbd5e1'}">${initials(n)}</span>${esc(n)}</span>`).join('')}</div>`:''}
+        </div>
+      </div>`;
+    }
+  }
+  html+='</div>';
+  c.innerHTML=html;
+  c.querySelectorAll('.today-card').forEach(el=>el.onclick=ev=>{if(ev.target.closest('.tmember'))return;openAction(+el.dataset.id);});
+  c.querySelectorAll('.tmember[data-name]').forEach(el=>el.onclick=()=>{const nm=el.getAttribute('data-name');if(state.byPerson.has(nm)){state.current=nm;renderPeople();renderMain();}});
 }
 
 /* TEAM (vue équipe globale, codes couleur) */
@@ -1010,6 +1090,7 @@ function readFile(file){
         const data=JSON.parse(ev.target.result);
         const raw=Array.isArray(data)?data:(data.entries||[]);
         if(!raw.length){document.getElementById('err').textContent="Ce fichier JSON ne contient aucune affectation.";return;}
+        state.generated=(data&&data.generated)||fmtToday();state.srcType='json';
         const lab=`${file.name} · ${raw.length} affectations`;
         if(!loadEntries(raw,lab))document.getElementById('err').textContent="Format JSON non reconnu.";
         return;
@@ -1020,6 +1101,7 @@ function readFile(file){
       const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
       const entries=parse(rows);
       if(!entries.length){document.getElementById('err').textContent="Aucune affectation détectée. Vérifiez les colonnes « Nom-Prénom » et « Date de début ».";return;}
+      state.generated=fmtToday();state.srcType='xlsx';
       const prevPerson=state.current,prevView=state.view;
       build(entries);
       if(prevPerson&&state.byPerson.has(prevPerson))state.current=prevPerson;
@@ -1076,7 +1158,11 @@ function showPicker(){
 function hidePicker(){document.getElementById('picker').classList.remove('show');}
 /* navigation par onglets (mobile) + écrans */
 function setTab(t){document.querySelectorAll('#bottomNav .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));}
-function showSettings(){document.getElementById('searchOv').classList.remove('show');updateFavLabel();document.getElementById('settings').classList.add('show');setTab('settings');}
+function showSettings(){document.getElementById('searchOv').classList.remove('show');updateFavLabel();updateDataInfo();document.getElementById('settings').classList.add('show');setTab('settings');}
+function updateDataInfo(){
+  const el=document.getElementById('dataInfo');if(el)el.innerHTML=state.generated?`Dernière mise à jour : <b>${esc(state.generated)}</b>`+(state.srcType?` <span style="color:var(--faint)">(${state.srcType})</span>`:''):'Dernière mise à jour : <b>inconnue</b>';
+  const v=document.getElementById('appVersion');if(v)v.textContent='version '+APP_VERSION;
+}
 function hideSettings(){document.getElementById('settings').classList.remove('show');}
 function goPlanning(){hideSettings();document.getElementById('searchOv').classList.remove('show');setTab('plan');if(!state.current)showPicker();}
 function openSearch(){document.getElementById('settings').classList.remove('show');document.getElementById('searchOv').classList.add('show');setTab('search');setTimeout(()=>document.getElementById('gSearch').focus(),50);}
@@ -1097,12 +1183,11 @@ function renderPickerList(){
   if(!n)box.innerHTML='<div style="padding:30px;color:var(--soft);text-align:center">Aucun résultat</div>';
 }
 function selectPerson(name){
-  state.current=name;state.view='week';state.cursor=new Date();
-  // recaler le curseur sur la semaine en cours si dans la plage, sinon 1re affectation
+  state.current=name;state.view='today';state.cursor=new Date();
   const arr=state.byPerson.get(name)||[];
   if(arr.length){const ds=arr.map(e=>e.date);const today=new Date();
     state.cursor=(today>=ds[0]&&today<=ds[ds.length-1])?today:ds[0];}
-  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v==='week'));
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v==='today'));
   hidePicker();hideSettings();setTab('plan');renderPeople();renderMain();
 }
 
@@ -1126,6 +1211,7 @@ function loadEntries(rawEntries,labelTxt){
 function autoLoad(){
   // 1) JSON pré-généré (rapide, idéal mobile) ; 2) sinon le .xlsx directement ; 3) sinon écran d'import.
   fetch('planning-data.json',{cache:'no-cache'}).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+    state.generated=data.generated||'';state.srcType='json';
     const lab=`${data.count||data.entries.length} affectations`+(data.generated?` · maj ${data.generated}`:'');
     loadEntries(data.entries,lab);
   }).catch(()=>{
@@ -1201,6 +1287,19 @@ document.addEventListener('keydown',e=>{
 
 tickClock();setInterval(tickClock,1000);
 
+/* glisser horizontalement pour changer de semaine (vues semaine / équipe) */
+(function(){
+  const el=document.getElementById('content');let x0=null,y0=null,t0=0;
+  el.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now();},{passive:true});
+  el.addEventListener('touchend',e=>{
+    if(x0===null)return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+    if(state.view!=='week'&&state.view!=='team')return;
+    if(Date.now()-t0>600)return;
+    if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.6)return; // surtout horizontal
+    step(dx<0?1:-1);
+  },{passive:true});
+})();
+
 document.getElementById('settingsTop').onclick=showSettings;
 document.getElementById('changeBtn').onclick=showPicker;
 document.getElementById('backBtn').onclick=showPicker;
@@ -1222,6 +1321,14 @@ document.getElementById('setUpdate').onclick=()=>document.getElementById('file')
 document.getElementById('setExport').onclick=exportForWeb;
 document.getElementById('setClose').onclick=goPlanning;
 document.getElementById('setFav').onclick=()=>{hideSettings();showFavPicker();};
+document.getElementById('setRefresh').onclick=async()=>{
+  const btn=document.getElementById('setRefresh');btn.textContent='Actualisation…';
+  try{
+    if('caches' in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}
+    if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}
+  }catch(e){}
+  location.reload(true);
+};
 
 /* écran favori */
 document.getElementById('favSearch').oninput=renderFavList;
