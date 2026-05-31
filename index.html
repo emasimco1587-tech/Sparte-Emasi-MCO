@@ -438,6 +438,21 @@ html[data-theme="light"] #picker,html[data-theme="light"] #settings,html[data-th
 html[data-theme="light"] #lock{background:rgba(238,242,248,.7)}
 html[data-theme="light"] #lockErr{color:#d11}
 html[data-theme="light"] .ev,html[data-theme="light"] .trow .tlabel{color:#fff}
+/* lisibilité onglets / segments / barres en mode clair */
+html[data-theme="light"] .seg{background:#dbe3ef;border-color:rgba(20,40,80,.12)}
+html[data-theme="light"] .seg button{color:#3a4658}
+html[data-theme="light"] .seg button.on{background:linear-gradient(145deg,#0a84ff,#0060df);color:#fff;box-shadow:0 2px 8px -2px rgba(10,132,255,.5)}
+html[data-theme="light"] .nav{background:#dbe3ef;border-color:rgba(20,40,80,.12)}
+html[data-theme="light"] .nav button{color:#16202e}
+html[data-theme="light"] .nav button:hover{background:#fff}
+html[data-theme="light"] .nav .lbl{color:#566173}
+html[data-theme="light"] .toolbar{background:rgba(238,242,248,.92)}
+html[data-theme="light"] #bottomNav .tab{color:#566173}
+html[data-theme="light"] #bottomNav .tab.on{color:#0060df}
+html[data-theme="light"] .theme-switch{background:#dbe3ef}
+html[data-theme="light"] .theme-switch button{color:#3a4658}
+html[data-theme="light"] .person:hover{background:#dde5f0}
+html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
 .glass-card,.card,.wcol,.team-day,.set-card,.modal,.lock-card,.pick-item{position:relative}
 .glass-card::after,.card::after,.wcol::after,.team-day::after,.modal::after{content:"";position:absolute;left:0;right:0;top:0;height:42%;
   background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0));pointer-events:none;border-radius:inherit;opacity:.7}
@@ -721,6 +736,7 @@ html[data-theme="light"] .ev,html[data-theme="light"] .trow .tlabel{color:#fff}
 <script>
 
 const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const MONTHS_SHORT=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 const DOW=['dim','lun','mar','mer','jeu','ven','sam'];
 const DOW_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
@@ -729,7 +745,7 @@ const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cu
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
-const APP_VERSION="v10";
+const APP_VERSION="v11";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -961,7 +977,7 @@ function renderTeam(){
       const pa=reals.indexOf(a.nom),pb=reals.indexOf(b.nom);return (pa<0?99:pa)-(pb<0?99:pb);});
     const isT=sameDay(d,today);if(isT)scrollId='team'+i;
     html+=`<div class="team-day${isT?' is-today':''}"${isT?' id="team'+i+'"':''}>
-      <div class="team-day-h"><span class="tdn">${d.getDate()}</span><span class="tdw">${WD_NAMES[i]}</span><span class="tdc">${dayEntries.length} aff.</span></div>`;
+      <div class="team-day-h"><span class="tdn">${d.getDate()}</span><span class="tdw">${WD_NAMES[i]} ${MONTHS_SHORT[d.getMonth()]}</span><span class="tdc">${dayEntries.length} aff.</span></div>`;
     if(!dayEntries.length){html+='<div class="team-rows"><div class="wcol-empty">Personne ce jour</div></div>';}
     else{
       html+='<div class="team-rows">';
@@ -1004,7 +1020,7 @@ function renderWeek(){
     const d=addDays(mon,i);
     const evs=entriesOnDay(all,d);
     const isT=sameDay(d,today);
-    html+=`<div class="wcol${isT?' today':''}"><div class="wcol-h"><span class="wd">${WD_NAMES[i]}</span><span class="dn">${d.getDate()}</span></div><div class="wcol-b">`;
+    html+=`<div class="wcol${isT?' today':''}"><div class="wcol-h"><span class="wd">${WD_NAMES[i]}</span><span class="dn">${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}</span></div><div class="wcol-b">`;
     if(!evs.length)html+='<div class="wcol-empty">—</div>';
     else for(const e of evs){
       const tm=teammates(e);
@@ -1052,7 +1068,7 @@ function renderAgenda(){
     for(const o of list){const dk=dKey(o.day);if(!byDay.has(dk))byDay.set(dk,[]);byDay.get(dk).push(o);}
     for(const[,des]of byDay){
       const d=des[0].day;const isT=sameDay(d,today);if(isT)exactTodayId='d'+dKey(d);
-      html+=`<div class="day${isT?' is-today':''}" id="d${dKey(d)}"><div class="day-date"><div class="dn">${d.getDate()}</div><div class="dw">${DOW[d.getDay()]}</div></div><div class="cards">`;
+      html+=`<div class="day${isT?' is-today':''}" id="d${dKey(d)}"><div class="day-date"><div class="dn">${d.getDate()}</div><div class="dw">${DOW[d.getDay()]}<br>${MONTHS_SHORT[d.getMonth()]}</div></div><div class="cards">`;
       for(const o of des)html+=cardHTML(o.e,o.day);
       html+=`</div></div>`;
     }
