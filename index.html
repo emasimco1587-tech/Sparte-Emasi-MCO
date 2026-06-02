@@ -420,9 +420,42 @@ main{display:flex;flex-direction:column;min-width:0}
 .pick-item.is-fav{border-color:var(--blue);box-shadow:0 0 18px -8px var(--blue-glow)}
 .pick-item .fav-star{color:var(--blue-2);width:18px;height:18px;flex:none}
 
+/* ===== Vue Chantiers ===== */
+.chan-wrap{display:flex;flex-direction:column;gap:16px;max-width:900px}
+.chan-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.cstat{display:flex;flex-direction:column;align-items:center;gap:3px;padding:14px 8px;border-radius:15px;
+  background:var(--glass);backdrop-filter:blur(20px) saturate(1.7) brightness(1.1);-webkit-backdrop-filter:blur(20px) saturate(1.7) brightness(1.1);border:1px solid var(--line);box-shadow:var(--sh)}
+.cstat svg{width:20px;height:20px;color:var(--cc)}
+.cs-n{font-family:'Fraunces';font-size:24px;line-height:1;color:var(--cc)}
+.cs-l{font-size:10.5px;color:var(--soft);text-align:center;font-weight:600}
+.chan-day{border-radius:16px;overflow:hidden;border:1px solid var(--line);
+  background:var(--glass);backdrop-filter:blur(22px) saturate(1.7) brightness(1.1);-webkit-backdrop-filter:blur(22px) saturate(1.7) brightness(1.1);box-shadow:var(--sh)}
+.chan-day.is-today{border-color:rgba(120,170,255,.4);box-shadow:var(--sh-glow)}
+.chan-day-h{display:flex;align-items:center;gap:10px;padding:12px 15px;background:var(--glass-hi);border-bottom:1px solid var(--line)}
+.chan-day.is-today .chan-day-h{background:linear-gradient(145deg,rgba(10,132,255,.28),rgba(0,96,223,.16))}
+.cdh-day{font-family:'Fraunces';font-size:16px}
+.cdh-date{font-size:12px;color:var(--soft)}
+.cdh-c{margin-left:auto;font-family:'IBM Plex Mono';font-size:11px;color:var(--soft)}
+.chan-day-empty{padding:16px;text-align:center;color:var(--faint);font-size:12.5px}
+.chan-row{display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--line);cursor:pointer;transition:.12s}
+.chan-row:last-child{border-bottom:none}
+.chan-row:hover{background:var(--glass-hi)}
+.chan-row:active{transform:scale(.995)}
+.chan-row-main{flex:1;min-width:0}
+.chan-name{font-weight:700;font-size:14px;line-height:1.3;margin-bottom:7px;word-break:break-word}
+.chan-agents{display:flex;flex-wrap:wrap;gap:6px}
+.ca-chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px 3px 7px;border-radius:20px;background:var(--glass-2);border:1px solid var(--line)}
+.ca-chip .pdot{width:8px;height:8px;border-radius:50%}
+.ca-more{font-size:11.5px;font-weight:700;color:var(--soft);padding:3px 8px;border-radius:20px;background:var(--glass-2);border:1px solid var(--line)}
+.chan-count{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:14px;color:var(--blue-2);background:rgba(10,132,255,.14);padding:6px 12px;border-radius:20px;flex:none}
+.chan-count svg{width:15px;height:15px}
+@media(max-width:900px){
+  .chan-summary{grid-template-columns:repeat(3,1fr)}
+  .cstat{padding:11px 6px}.cs-n{font-size:20px}.cs-l{font-size:9.5px}
+}
+
 /* ===== Vue Équipe globale ===== */
-.team-wrap{display:flex;flex-direction:column;gap:16px}
-.team-legend{display:flex;flex-wrap:wrap;gap:7px;padding:2px 0 4px}
+.team-wrap{display:flex;flex-direction:column;gap:16px}.team-legend{display:flex;flex-wrap:wrap;gap:7px;padding:2px 0 4px}
 .lg{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--ink);background:var(--glass-2);border:1px solid var(--line);padding:4px 10px 4px 7px;border-radius:20px}
 .lg .dot{width:11px;height:11px;border-radius:50%;flex:none}
 .team-day{border-radius:var(--r);overflow:hidden;background:var(--glass);backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);-webkit-backdrop-filter:blur(28px) saturate(1.8) brightness(1.12);border:1px solid var(--line);box-shadow:var(--sh)}
@@ -548,7 +581,7 @@ html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
 <!-- VERROU : mot de passe à la première ouverture -->
 <div id="lock">
   <div class="lock-card">
-    <div class="lock-logo"><span>P</span></div>
+    <div class="lock-logo"><img src="icons/icon-192.png" alt="EMASI"></div>
     <h2>Planning</h2>
     <p>Accès protégé — saisissez le code.</p>
     <div class="lock-field">
@@ -583,7 +616,7 @@ html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
   </button>
   <div class="brand" id="brandBox">
-    <div class="logo"><span>P</span></div>
+    <div class="logo"><img src="icons/icon-192.png" alt="EMASI"></div>
     <div>
       <h1>Planning</h1>
       <p id="subtitle">Importez votre export d'affectations</p>
@@ -637,6 +670,7 @@ html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
           <button data-v="agenda"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Agenda</span></button>
           <button data-v="month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01"/></svg><span>Mois</span></button>
           <button data-v="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Équipe</span></button>
+          <button data-v="chantiers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M4 20V10l5-3 5 3v10M14 20v-6l5-3v9M9 11h.01M9 14h.01M9 17h.01"/></svg><span>Chantiers</span></button>
         </div>
         <div class="nav" id="periodNav">
           <button id="prev" title="Précédent">‹</button>
@@ -775,7 +809,7 @@ const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cu
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
-const APP_VERSION="v12";
+const APP_VERSION="v14";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -924,11 +958,20 @@ function tickClock(){
 /* ---------- main render ---------- */
 function renderMain(){
   const change=document.getElementById('changeBtn');
-  if(state.view==='team'){
+  if(state.view==='team'||state.view==='chantiers'){
     if(change)change.style.visibility='hidden';
-    document.getElementById('whoName').textContent='Équipe globale';
-    document.getElementById('whoSub').textContent=`${state.people.filter(n=>!SPECIAL.test(n)).length} personnes`;
-    renderTeam();return;
+    document.getElementById('periodNav').style.display='flex';
+    const fab=document.getElementById('fabToday');if(fab)fab.dataset.hide='';
+    if(state.view==='team'){
+      document.getElementById('whoName').textContent='Équipe globale';
+      document.getElementById('whoSub').textContent=`${state.people.filter(n=>!SPECIAL.test(n)).length} personnes`;
+      renderTeam();
+    }else{
+      document.getElementById('whoName').textContent='Chantiers de la semaine';
+      document.getElementById('whoSub').textContent='Activité par chantier et disponibilités';
+      renderChantiers();
+    }
+    return;
   }
   if(change)change.style.visibility='visible';
   if(!state.current){document.getElementById('content').innerHTML='';return;}
@@ -1033,6 +1076,123 @@ function shade(hex,pct){
   const n=parseInt(hex.slice(1),16);let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
   r=Math.max(0,Math.min(255,r+Math.round(255*pct/100)));g=Math.max(0,Math.min(255,g+Math.round(255*pct/100)));b=Math.max(0,Math.min(255,b+Math.round(255*pct/100)));
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/* catégorise une affectation : chantier / depannage / bureau / formation / absence */
+function categorize(e){
+  const tache=(e.tache||'').toUpperCase();
+  const blob=((e.lib||'')+' '+(e.com||'')+' '+(e.section||'')+' '+(e.tache||'')).toLowerCase();
+  // absences / congés
+  if(/^(ca|abs|jrtt|rtt|cp)\b/.test(tache)||/cong[ée]|vacance|repos|maladie|absent|\brtt\b|\bjrtt\b/.test(blob))return 'absence';
+  // formation / école
+  if(/^form|^ecole/.test(tache)||/formation|\bécole\b|\becole\b/.test(blob))return 'formation';
+  // dépannage / astreinte / temps réel
+  if(/d[ée]pann|astreinte/.test(blob)||/ACTIVITE TEMPS|TEMPS R[ÉE]EL/i.test(tache))return 'depannage';
+  // bureau / réunions / coordination / planning / logistique
+  if(/^reu|^r-|^activite coordo|^planning|^logistique|^promo|^act-synd|^divers|^patrimoine|^prepa|^man-equipe|^teletravail|^t[ée]l[ée]travail/i.test(tache)||/bureau|r[ée]union|t[ée]l[ée]travail/.test(blob))return 'bureau';
+  // sinon : vrai chantier
+  return 'chantier';
+}
+const CAT_META={
+  chantier:{label:'Sur chantier',color:'#0a84ff',icon:'M2 20h20M4 20V10l5-3 5 3v10M14 20v-6l5-3v9'},
+  depannage:{label:'Dépannage',color:'#ff9f0a',icon:'M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2-2 2.1-2.1z'},
+  bureau:{label:'Bureau / réunion',color:'#bf5af2',icon:'M3 21h18M5 21V7l8-4v18M19 21V11l-6-3M9 9h.01M9 13h.01M9 17h.01'},
+  formation:{label:'Formation',color:'#64d2ff',icon:'M22 10 12 5 2 10l10 5 10-5zM6 12v5c0 1 3 3 6 3s6-2 6-3v-5'},
+  absence:{label:'Absent / congé',color:'#8a93a6',icon:'M18 6 6 18M6 6l12 12'}
+};
+
+/* nom lisible d'un chantier : Section (vrai nom) > Libellé > Tâche (code) */
+function chantierName(e){
+  const s=(e.section||'').trim();
+  if(s&&!/^[0-9]{5,}/.test(s))return s;
+  const l=(e.lib||'').trim();
+  if(l)return l;
+  return (e.tache||e.section||'Chantier').trim();
+}
+
+/* VUE CHANTIERS DE LA SEMAINE (regroupée par jour) */
+function renderChantiers(){
+  const c=document.getElementById('content');
+  const mon=startOfWeek(state.cursor),fri=addDays(mon,4);
+  const lbl=mon.getMonth()===fri.getMonth()
+    ?`${mon.getDate()} – ${fri.getDate()} ${MONTHS[mon.getMonth()]} ${mon.getFullYear()}`
+    :`${mon.getDate()} ${MONTHS[mon.getMonth()]} – ${fri.getDate()} ${MONTHS[fri.getMonth()]} ${fri.getFullYear()}`;
+  document.getElementById('periodLbl').textContent='Semaine du '+lbl;
+  const reals=state.people.filter(n=>!SPECIAL.test(n));
+  const totalAgents=reals.length;
+  const today=new Date();
+
+  // affectations de la semaine, par jour
+  const weekDays=[];
+  for(let i=0;i<5;i++){const d=addDays(mon,i);weekDays.push({d,entries:entriesOnDay(state.entries,d)});}
+
+  // synthèse hebdo par catégorie (agents uniques)
+  const catAgents={chantier:new Set(),depannage:new Set(),bureau:new Set(),formation:new Set(),absence:new Set()};
+  for(const wd of weekDays)for(const e of wd.entries){if(SPECIAL.test(e.nom))continue;catAgents[categorize(e)].add(e.nom);}
+
+  let html='<div class="chan-wrap">';
+  html+='<div class="chan-summary">';
+  for(const k of ['chantier','depannage','bureau','formation','absence']){
+    const m=CAT_META[k];
+    html+=`<div class="cstat" style="--cc:${m.color}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${m.icon.split('M').filter(Boolean).map(p=>'<path d="M'+p+'"/>').join('')}</svg>
+      <div class="cs-n">${catAgents[k].size}</div><div class="cs-l">${m.label}</div></div>`;
+  }
+  html+=`<div class="cstat" style="--cc:#30d158"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><div class="cs-n">${totalAgents}</div><div class="cs-l">Agents au total</div></div>`;
+  html+='</div>';
+
+  // pour chaque jour : liste des chantiers de ce jour avec les agents
+  let scrollId=null;
+  for(let i=0;i<5;i++){
+    const wd=weekDays[i];const isT=sameDay(wd.d,today);if(isT)scrollId='chanDay'+i;
+    // regrouper les chantiers du jour
+    const chant=new Map(); // nom -> {agents:Set, ids:[]}
+    for(const e of wd.entries){
+      if(categorize(e)!=='chantier')continue;
+      const key=chantierName(e);
+      if(!chant.has(key))chant.set(key,{agents:new Set(),first:e});
+      chant.get(key).agents.add(e.nom);
+    }
+    html+=`<div class="chan-day${isT?' is-today':''}"${isT?' id="chanDay'+i+'"':''}>
+      <div class="chan-day-h"><span class="cdh-day">${WD_NAMES[i]}</span><span class="cdh-date">${wd.d.getDate()} ${MONTHS_SHORT[wd.d.getMonth()]}</span><span class="cdh-c">${chant.size} chantier${chant.size>1?'s':''}</span></div>`;
+    if(!chant.size){
+      html+='<div class="chan-day-empty">Aucun chantier ce jour</div>';
+    }else{
+      const sorted=[...chant.entries()].sort((a,b)=>b[1].agents.size-a[1].agents.size);
+      for(const [name,info] of sorted){
+        const agents=[...info.agents];
+        html+=`<div class="chan-row" data-chantier="${esc(name)}" data-day="${i}">
+          <div class="chan-row-main">
+            <div class="chan-name">${esc(name)}</div>
+            <div class="chan-agents">${agents.slice(0,5).map(n=>`<span class="ca-chip"><span class="pdot" style="background:${state.color.get(n)||'#8a93a6'}"></span>${esc(n.split(' ')[0])}</span>`).join('')}${agents.length>5?`<span class="ca-more">+${agents.length-5}</span>`:''}</div>
+          </div>
+          <div class="chan-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${info.agents.size}</div>
+        </div>`;
+      }
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  c.innerHTML=html;
+  c.querySelectorAll('.chan-row').forEach(el=>el.onclick=()=>openChantierDay(el.dataset.chantier,addDays(mon,+el.dataset.day)));
+  if(scrollId){const t=document.getElementById(scrollId);if(t)setTimeout(()=>t.scrollIntoView({behavior:'auto',block:'start'}),50);}
+}
+
+/* détail d'un chantier un jour donné : qui y va */
+function openChantierDay(name,day){
+  const rows=entriesOnDay(state.entries,day).filter(e=>categorize(e)==='chantier'&&chantierName(e)===name);
+  document.getElementById('modalTitle').textContent=name;
+  let html=`<div class="det-meta"><span>📅 ${DOW_FULL[day.getDay()]} ${day.getDate()} ${MONTHS[day.getMonth()]}</span><span>👷 ${rows.length} agent${rows.length>1?'s':''}</span></div>`;
+  // commentaire représentatif
+  const withCom=rows.find(e=>e.com);
+  if(withCom&&withCom.com)html+=`<div class="det-block"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Détail</h4><div class="det-com">${esc(withCom.com)}</div></div>`;
+  html+='<div class="det-block"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Agents sur place</h4><div class="team-grid">';
+  for(const e of rows){const col=state.color.get(e.nom)||'#8a93a6';
+    html+=`<span class="tmember" data-id="${e._id}"><span class="av" style="background:${col}33;color:${col}">${initials(e.nom)}</span>${esc(e.nom)}</span>`;}
+  html+='</div></div>';
+  const body=document.getElementById('modalBody');body.innerHTML=html;
+  body.querySelectorAll('.tmember[data-id]').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
+  document.getElementById('overlay').classList.add('show');
 }
 
 /* WEEK (Mon-Fri) */
@@ -1440,7 +1600,7 @@ document.getElementById('viewSeg').onclick=e=>{const b=e.target.closest('button'
 
 // recale le curseur sur aujourd'hui si la plage de données le contient, sinon sur l'affectation la plus proche
 function recenterToday(){
-  const arr=(state.view==='team'?state.entries:personEntries());if(!arr.length)return;
+  const arr=((state.view==='team'||state.view==='chantiers')?state.entries:personEntries());if(!arr.length)return;
   const today=new Date();const ds=arr.map(e=>e.date).sort((a,b)=>a-b);
   if(today>=ds[0]&&today<=ds[ds.length-1]){state.cursor=today;return;}
   const tMid=new Date(today.getFullYear(),today.getMonth(),today.getDate());
@@ -1449,7 +1609,7 @@ function recenterToday(){
 }
 
 function step(dir){
-  if(state.view==='week'||state.view==='team')state.cursor=addDays(startOfWeek(state.cursor),dir*7);
+  if(state.view==='week'||state.view==='team'||state.view==='chantiers')state.cursor=addDays(startOfWeek(state.cursor),dir*7);
   else if(state.view==='month')state.cursor=new Date(state.cursor.getFullYear(),state.cursor.getMonth()+dir,1);
   renderMain();
 }
@@ -1505,7 +1665,7 @@ tickClock();setInterval(tickClock,1000);
   el.addEventListener('touchstart',e=>{if(e.touches.length!==1)return;x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now();},{passive:true});
   el.addEventListener('touchend',e=>{
     if(x0===null)return;const t=e.changedTouches[0];const dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
-    if(state.view!=='week'&&state.view!=='team')return;
+    if(state.view!=='week'&&state.view!=='team'&&state.view!=='chantiers')return;
     if(Date.now()-t0>600)return;
     if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.6)return; // surtout horizontal
     step(dx<0?1:-1);
