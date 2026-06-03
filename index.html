@@ -420,6 +420,37 @@ main{display:flex;flex-direction:column;min-width:0}
 .pick-item.is-fav{border-color:var(--blue);box-shadow:0 0 18px -8px var(--blue-glow)}
 .pick-item .fav-star{color:var(--blue-2);width:18px;height:18px;flex:none}
 
+/* ===== Vue picker + Admin (sheets) ===== */
+#vuePicker,#admin{position:fixed;inset:0;z-index:52;display:none;flex-direction:column;
+  background:rgba(8,12,20,.72);backdrop-filter:blur(40px) saturate(1.8) brightness(1.1);-webkit-backdrop-filter:blur(40px) saturate(1.8) brightness(1.1);
+  background-image:radial-gradient(700px 500px at 100% -8%,rgba(10,132,255,.22),transparent 56%),radial-gradient(680px 520px at -8% 110%,rgba(100,210,255,.16),transparent 56%);}
+#vuePicker.show,#admin.show{display:flex;animation:fade .22s ease}
+.vue-list{flex:1;overflow-y:auto;padding:10px 0 calc(var(--nav-h) + 24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:9px}
+.vue-item{display:flex;align-items:center;gap:14px;padding:16px 16px;border-radius:16px;text-align:left;
+  background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px);box-shadow:var(--sh);transition:.12s}
+.vue-item:active{transform:scale(.99)}
+.vue-item.on{border-color:var(--blue);box-shadow:0 0 18px -8px var(--blue-glow)}
+.vue-item .vi-ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;color:#fff;flex:none;background:linear-gradient(145deg,var(--blue),var(--blue-d))}
+.vue-item .vi-ic svg{width:21px;height:21px}
+.vue-item .vi-t{font-size:16px;font-weight:700}
+.vue-item .vi-d{font-size:12.5px;color:var(--soft);margin-top:2px}
+.vue-item.on .vi-check{margin-left:auto;color:var(--blue-2)}
+.vue-item .vi-check{margin-left:auto;color:transparent}
+.vue-item .vi-check svg{width:20px;height:20px}
+/* color list (admin) */
+.color-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto}
+.color-row{display:flex;align-items:center;gap:11px;padding:7px 8px;border-radius:11px;background:var(--glass-2);border:1px solid var(--line)}
+.color-row .cr-name{flex:1;font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.color-swatch{width:34px;height:34px;border-radius:10px;border:2px solid rgba(255,255,255,.25);cursor:pointer;flex:none;position:relative;overflow:hidden}
+.color-swatch input{position:absolute;inset:-6px;opacity:0;cursor:pointer}
+.notif-opts{display:flex;flex-direction:column;gap:8px}
+.notif-opt{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:11px;background:var(--glass-2);border:1px solid var(--line);font-size:14px;font-weight:600;cursor:pointer}
+.notif-opt input{width:20px;height:20px;accent-color:var(--blue)}
+.notif-note{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.5}
+html[data-theme="light"] #vuePicker,html[data-theme="light"] #admin{background:rgba(238,242,248,.85)}
+html[data-theme="light"] .vue-item.on,html[data-theme="light"] .notif-opt{color:var(--ink)}
+@media(min-width:901px){.vue-list{max-width:560px;margin:0 auto;width:100%}}
+
 /* ===== Vue Chantiers ===== */
 .chan-wrap{display:flex;flex-direction:column;gap:16px;max-width:900px}
 .chan-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
@@ -734,6 +765,18 @@ html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
         <button class="btn btn-ink" id="setFav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>Choisir / changer mon nom</button>
       </div>
       <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>Mes rappels</h3>
+        <p>Être prévenu avant mes interventions. Choisissez les délais :</p>
+        <div class="notif-opts" id="notifOpts">
+          <label class="notif-opt"><input type="checkbox" data-min="1440"> 1 jour avant</label>
+          <label class="notif-opt"><input type="checkbox" data-min="60"> 1 heure avant</label>
+          <label class="notif-opt"><input type="checkbox" data-min="15"> 15 min avant</label>
+        </div>
+        <button class="btn btn-blue" id="notifEnable" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Activer les notifications</button>
+        <button class="btn btn-ink" id="notifIcs" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Ajouter au calendrier (.ics)</button>
+        <p class="notif-note">L'ajout au calendrier crée des rappels garantis, même application fermée.</p>
+      </div>
+      <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Mettre à jour les données</h3>
         <p>Chargez un nouvel export <b>Excel (.xlsx)</b> ou un fichier <b>.json</b>. L'affichage se met à jour immédiatement sur cet appareil.</p>
         <button class="btn btn-ink" id="setUpdate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 21h14"/></svg>Choisir un fichier</button>
@@ -754,10 +797,56 @@ html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
         <button class="btn btn-blue" id="setRefresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Rafraîchir (vider le cache)</button>
       </div>
       <p style="text-align:center;color:var(--faint);font-size:11px;margin-top:2px" id="appVersion">version —</p>
+      <button class="btn btn-ink" id="setAdmin" style="justify-content:center;padding:13px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Espace administrateur</button>
       <button class="btn btn-blue" id="setClose" style="justify-content:center;padding:13px">Retour au planning</button>
     </div>
   </div>
 </div>
+
+<!-- VUE : sélecteur de vue (mobile) -->
+<div id="vuePicker">
+  <div class="sheet">
+    <div class="sheet-bar">
+      <span class="sheet-bar-title">Choisir une vue</span>
+      <button class="sheet-close" id="vueQuit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="sheet-head"><h2>Vue</h2><p>Comment afficher le planning ?</p></div>
+    <div class="vue-list" id="vueList"></div>
+  </div>
+</div>
+
+<!-- ADMINISTRATEUR -->
+<div id="admin">
+  <div class="sheet">
+    <div class="sheet-bar">
+      <button class="sheet-back" id="adminBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Retour</button>
+      <button class="sheet-close" id="adminQuit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="sheet-head"><h2>Administrateur</h2><p>Couleurs, données, notifications et configuration.</p></div>
+    <div class="set-list" id="adminList">
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 2-2 2 2 0 0 0-2-2h-1.5a2.5 2.5 0 0 1 0-5H14a6 6 0 0 0 0-12z"/></svg>Couleurs des personnes</h3>
+        <p>Touchez une pastille pour changer la couleur d'un agent (utilisée en vues Équipe et Chantiers).</p>
+        <div class="color-list" id="colorList"></div>
+        <button class="btn btn-ink" id="colorReset" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Réinitialiser les couleurs</button>
+      </div>
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 21h14"/></svg>Données</h3>
+        <p id="adminDataInfo">—</p>
+        <button class="btn btn-ink" id="adminImport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 21h14"/></svg>Importer (Excel / JSON)</button>
+        <button class="btn btn-amber" id="adminExport" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Exporter le planning (JSON)</button>
+      </div>
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>Configuration</h3>
+        <p>Sauvegarder ou restaurer vos réglages (favori, thème, couleurs, notifications).</p>
+        <button class="btn btn-ink" id="cfgExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Exporter la configuration</button>
+        <button class="btn btn-ink" id="cfgImport" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 21h14"/></svg>Importer une configuration</button>
+      </div>
+      <button class="btn btn-blue" id="adminClose" style="justify-content:center;padding:13px">Retour au planning</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="cfgFile" accept=".json" hidden>
 
 <button id="fabToday" title="Aujourd'hui">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/><circle cx="12" cy="15" r="2.4" fill="currentColor" stroke="none"/></svg>
@@ -772,6 +861,7 @@ html[data-theme="light"] .pcount{background:rgba(20,40,80,.10);color:#566173}
 <nav id="bottomNav">
   <div class="row">
     <button class="tab on" data-tab="plan"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span>Planning</button>
+    <button class="tab" data-tab="vue"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>Vue</button>
     <button class="tab" data-tab="people"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></span>Personnes</button>
     <button class="tab" data-tab="search"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg></span>Recherche</button>
     <button class="tab" data-tab="settings"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Réglages</button>
@@ -809,7 +899,8 @@ const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cu
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
-const APP_VERSION="v14";
+const ADMIN_PASSWORD="Em@simco1587";
+const APP_VERSION="v16";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -908,6 +999,7 @@ function build(entries){
   const reals=state.people.filter(n=>!SPECIAL.test(n));
   reals.forEach((n,i)=>state.color.set(n,PALETTE[i%PALETTE.length]));
   state.people.forEach(n=>{if(!state.color.has(n))state.color.set(n,'#8a93a6');});
+  try{const cc=JSON.parse(lsGet('colors')||'{}');for(const n in cc)state.color.set(n,cc[n]);}catch(e){}
   state.current=state.people[0]||null;
   // cursor = today if within data range, else first entry's week
   const dates=entries.map(e=>e.date).sort((a,b)=>a-b);
@@ -1502,7 +1594,7 @@ function showPicker(){
 function hidePicker(){document.getElementById('picker').classList.remove('show');}
 /* navigation par onglets (mobile) + écrans */
 function setTab(t){document.querySelectorAll('#bottomNav .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));}
-function showSettings(){document.getElementById('searchOv').classList.remove('show');updateFavLabel();updateDataInfo();document.getElementById('settings').classList.add('show');setTab('settings');}
+function showSettings(){document.getElementById('searchOv').classList.remove('show');updateFavLabel();updateDataInfo();renderNotifState();document.getElementById('settings').classList.add('show');setTab('settings');}
 function updateDataInfo(){
   const el=document.getElementById('dataInfo');if(el)el.innerHTML=state.generated?`Dernière mise à jour : <b>${esc(state.generated)}</b>`+(state.srcType?` <span style="color:var(--faint)">(${state.srcType})</span>`:''):'Dernière mise à jour : <b>inconnue</b>';
   const v=document.getElementById('appVersion');if(v)v.textContent='version '+APP_VERSION;
@@ -1533,6 +1625,7 @@ function selectPerson(name){
     state.cursor=(today>=ds[0]&&today<=ds[ds.length-1])?today:ds[0];}
   document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v==='today'));
   hidePicker();hideSettings();setTab('plan');renderPeople();renderMain();
+  try{if(state.fav&&typeof scheduleNotifications==='function')scheduleNotifications();}catch(e){}
 }
 
 /* ---- charger des données déjà intégrées (entries avec dates ISO) ---- */
@@ -1626,7 +1719,7 @@ document.getElementById('modalClose').onclick=closeOverlay;
 document.getElementById('overlay').onclick=e=>{if(e.target.id==='overlay')closeOverlay();};
 document.getElementById('searchOv').onclick=e=>{if(e.target.id==='searchOv'){e.currentTarget.classList.remove('show');setTab('plan');}};
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeOverlay();document.getElementById('searchOv').classList.remove('show');hideSettings();}
+  if(e.key==='Escape'){closeOverlay();document.getElementById('searchOv').classList.remove('show');hideSettings();document.getElementById('admin').classList.remove('show');document.getElementById('vuePicker').classList.remove('show');}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'&&document.getElementById('app').style.display!=='none'){e.preventDefault();openSearch();}
 });
 
@@ -1684,10 +1777,49 @@ document.getElementById('pickerSearch').oninput=renderPickerList;
 document.querySelectorAll('#bottomNav .tab').forEach(b=>b.onclick=()=>{
   const t=b.dataset.tab;
   if(t==='plan')goPlanning();
+  else if(t==='vue')openVuePicker();
   else if(t==='people'){setTab('people');showPicker();}
   else if(t==='search')openSearch();
   else if(t==='settings')showSettings();
 });
+
+/* ---- sélecteur de vue (mobile) ---- */
+const VIEW_META=[
+  ['today','Ma journée','Mes interventions du jour','M12 7v5l3 2','circle'],
+  ['week','Semaine','Lundi à vendredi',''],
+  ['agenda','Agenda','Liste chronologique',''],
+  ['month','Mois','Calendrier mensuel',''],
+  ['team','Équipe','Tous, par couleur',''],
+  ['chantiers','Chantiers','Par chantier et jour','']
+];
+const VIEW_ICON={
+  today:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  agenda:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  month:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  team:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/>',
+  chantiers:'<path d="M2 20h20M4 20V10l5-3 5 3v10M14 20v-6l5-3v9"/>'
+};
+const VIEW_LABEL={today:'Ma journée',week:'Semaine',agenda:'Agenda',month:'Mois',team:'Équipe',chantiers:'Chantiers'};
+const VIEW_DESC={today:'Mes interventions du jour',week:'Lundi à vendredi',agenda:'Liste chronologique',month:'Calendrier mensuel',team:'Toute l\'équipe, par couleur',chantiers:'Par chantier et par jour'};
+function openVuePicker(){
+  const box=document.getElementById('vueList');box.innerHTML='';
+  for(const v of ['today','week','agenda','month','team','chantiers']){
+    const b=document.createElement('button');b.className='vue-item'+(state.view===v?' on':'');
+    b.innerHTML=`<span class="vi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${VIEW_ICON[v]}</svg></span>
+      <span><span class="vi-t">${VIEW_LABEL[v]}</span><span class="vi-d">${VIEW_DESC[v]}</span></span>
+      <span class="vi-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></span>`;
+    b.onclick=()=>{switchView(v);document.getElementById('vuePicker').classList.remove('show');setTab('plan');};
+    box.appendChild(b);
+  }
+  document.getElementById('vuePicker').classList.add('show');setTab('vue');
+}
+function switchView(v){
+  state.view=v;
+  document.querySelectorAll('#viewSeg button').forEach(x=>x.classList.toggle('on',x.dataset.v===v));
+  recenterToday();renderMain();
+}
+document.getElementById('vueQuit').onclick=()=>{document.getElementById('vuePicker').classList.remove('show');goPlanning();};
 /* écran Réglages */
 document.getElementById('setUpdate').onclick=()=>document.getElementById('file').click();
 document.getElementById('setExport').onclick=exportForWeb;
@@ -1701,6 +1833,110 @@ document.getElementById('setRefresh').onclick=async()=>{
   }catch(e){}
   location.reload(true);
 };
+
+/* ===== ADMINISTRATEUR (protégé par mot de passe) ===== */
+let adminUnlocked=false;
+function requestAdmin(){
+  if(adminUnlocked){openAdmin();return;}
+  const code=prompt('Code administrateur :');
+  if(code===null)return;
+  if(code===ADMIN_PASSWORD){adminUnlocked=true;openAdmin();}
+  else alert('Code incorrect.');
+}
+function openAdmin(){hideSettings();renderColorList();adminDataInfoFill();document.getElementById('admin').classList.add('show');}
+function closeAdmin(){document.getElementById('admin').classList.remove('show');}
+function adminDataInfoFill(){const el=document.getElementById('adminDataInfo');if(el)el.innerHTML=state.generated?`Dernière mise à jour : <b>${esc(state.generated)}</b> ${state.srcType?'('+state.srcType+')':''} · ${state.entries.length} affectations`:'Aucune donnée chargée.';}
+document.getElementById('setAdmin').onclick=requestAdmin;
+document.getElementById('adminClose').onclick=()=>{closeAdmin();goPlanning();};
+document.getElementById('adminBack').onclick=()=>{closeAdmin();showSettings();};
+document.getElementById('adminQuit').onclick=()=>{closeAdmin();goPlanning();};
+
+/* --- couleurs personnalisées --- */
+function loadCustomColors(){try{return JSON.parse(lsGet('colors')||'{}');}catch(e){return {};}}
+function applyCustomColors(){const cc=loadCustomColors();for(const n in cc)state.color.set(n,cc[n]);}
+function renderColorList(){
+  const box=document.getElementById('colorList');box.innerHTML='';
+  const cc=loadCustomColors();
+  for(const n of state.people.filter(x=>!SPECIAL.test(x))){
+    const col=state.color.get(n)||'#8a93a6';
+    const row=document.createElement('div');row.className='color-row';
+    row.innerHTML=`<span class="color-swatch" style="background:${col}"><input type="color" value="${col}"></span><span class="cr-name">${esc(n)}</span>`;
+    const inp=row.querySelector('input');
+    inp.oninput=e=>{const v=e.target.value;row.querySelector('.color-swatch').style.background=v;state.color.set(n,v);cc[n]=v;lsSet('colors',JSON.stringify(cc));};
+    box.appendChild(row);
+  }
+}
+document.getElementById('colorReset').onclick=()=>{lsDel('colors');build(state.entries);applyCustomColors();renderColorList();};
+document.getElementById('adminImport').onclick=()=>document.getElementById('file').click();
+document.getElementById('adminExport').onclick=exportForWeb;
+
+/* --- notifications de rappel --- */
+function getNotifCfg(){try{return JSON.parse(lsGet('notif')||'{"mins":[]}');}catch(e){return {mins:[]};}}
+function renderNotifState(){
+  const cfg=getNotifCfg();
+  document.querySelectorAll('#notifOpts input').forEach(i=>{i.checked=cfg.mins.includes(+i.dataset.min);});
+}
+document.querySelectorAll('#notifOpts input').forEach(i=>i.onchange=()=>{
+  const mins=[...document.querySelectorAll('#notifOpts input')].filter(x=>x.checked).map(x=>+x.dataset.min);
+  lsSet('notif',JSON.stringify({mins}));
+});
+document.getElementById('notifEnable').onclick=async()=>{
+  if(!('Notification' in window)){alert("Les notifications ne sont pas disponibles sur ce navigateur. Utilisez plutôt l'ajout au calendrier (.ics).");return;}
+  const p=await Notification.requestPermission();
+  if(p==='granted'){scheduleNotifications();alert('Notifications activées. Astuce : pour un rappel garanti même application fermée, utilisez aussi « Ajouter au calendrier ».');}
+  else alert("Permission refusée. Vous pouvez utiliser l'ajout au calendrier (.ics) à la place.");
+};
+let notifTimers=[];
+function scheduleNotifications(){
+  notifTimers.forEach(t=>clearTimeout(t));notifTimers=[];
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const cfg=getNotifCfg();if(!cfg.mins.length||!state.fav)return;
+  const now=Date.now();const horizon=now+36*3600*1000; // 36h à l'avance (limite navigateur)
+  const mine=(state.byPerson.get(state.fav)||[]);
+  for(const e of mine){
+    for(const min of cfg.mins){
+      const at=e.date.getTime()-min*60000;
+      if(at>now&&at<horizon){
+        const delay=at-now;
+        notifTimers.push(setTimeout(()=>{try{new Notification('Intervention dans '+(min>=1440?'1 jour':min>=60?'1 heure':'15 min'),{body:(e.lib||e.section||'Affectation')+' · '+fmtTime(e.date),icon:'icons/icon-192.png'});}catch(_){}},delay));
+      }
+    }
+  }
+}
+function pad2(n){return String(n).padStart(2,'0');}
+function icsDate(d){return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+'T'+pad2(d.getHours())+pad2(d.getMinutes())+'00';}
+document.getElementById('notifIcs').onclick=()=>{
+  const who=state.fav||state.current;
+  if(!who){alert('Choisissez d\'abord votre nom (favori).');return;}
+  const cfg=getNotifCfg();const mins=cfg.mins.length?cfg.mins:[60];
+  const mine=(state.byPerson.get(who)||[]);
+  const today=new Date();const future=mine.filter(e=>e.date>=new Date(today.getFullYear(),today.getMonth(),today.getDate()));
+  if(!future.length){alert('Aucune intervention à venir pour '+who+'.');return;}
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//EMASI Planning//FR\r\nCALSCALE:GREGORIAN\r\n';
+  future.forEach((e,i)=>{
+    const end=e.end&&e.end>e.date?e.end:new Date(e.date.getTime()+3600000);
+    ics+='BEGIN:VEVENT\r\n';
+    ics+='UID:emasi-'+who.replace(/\s/g,'')+'-'+i+'@planning\r\n';
+    ics+='DTSTAMP:'+icsDate(new Date())+'\r\n';
+    ics+='DTSTART:'+icsDate(e.date)+'\r\n';
+    ics+='DTEND:'+icsDate(end)+'\r\n';
+    ics+='SUMMARY:'+((e.lib||e.section||'Intervention').replace(/[\r\n,;]/g,' '))+'\r\n';
+    if(e.com)ics+='DESCRIPTION:'+(e.com.replace(/[\r\n]+/g,' ').replace(/[,;]/g,' ').slice(0,300))+'\r\n';
+    if(e.section)ics+='LOCATION:'+(e.section.replace(/[\r\n,;]/g,' '))+'\r\n';
+    mins.forEach(min=>{ics+='BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Rappel\r\nTRIGGER:-PT'+(min>=60?(min/60)+'H':min+'M')+'\r\nEND:VALARM\r\n';});
+    ics+='END:VEVENT\r\n';
+  });
+  ics+='END:VCALENDAR\r\n';
+  const blob=new Blob([ics],{type:'text/calendar'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='planning-'+who.replace(/\s/g,'_')+'.ics';document.body.appendChild(a);a.click();a.remove();
+};
+
+/* --- configuration (sauvegarde / restauration) --- */
+document.getElementById('cfgExport').onclick=()=>{
+  const cfg={theme:lsGet('theme'),fav:lsGet('fav_person'),colors:lsGet('colors'),notif:lsGet('notif')};
+  const blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='emasi-config.json';document.body.appendChild(a);a.click();a.remove();
+};
+document.getElementById('cfgImport').onclick=()=>document.getElementById('cfgFile').click();
+document.getElementById('cfgFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const cfg=JSON.parse(ev.target.result);if(cfg.theme)lsSet('theme',cfg.theme);if(cfg.fav)lsSet('fav_person',cfg.fav);if(cfg.colors)lsSet('colors',cfg.colors);if(cfg.notif)lsSet('notif',cfg.notif);alert('Configuration importée. L\'application va se recharger.');location.reload();}catch(err){alert('Fichier de configuration invalide.');}};r.readAsText(f);e.target.value='';};
 
 /* thème clair / sombre */
 function applyTheme(t){
