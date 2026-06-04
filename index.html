@@ -345,18 +345,13 @@ main{display:flex;flex-direction:column;min-width:0}
   aside{display:none}
   main{min-height:auto}
   .toolbar{flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap}
-  .who{flex:none;max-width:42%}
+  .who{flex:1;max-width:none}
   .who h2{font-size:15px}
   .who p{display:none}
   .who .iconbtn{width:34px;height:34px}
-  .tb-right{margin-left:auto;width:auto;flex-direction:row;align-items:center;gap:7px;min-width:0}
-  .seg{width:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:3px}
-  .seg::-webkit-scrollbar{display:none}
-  .seg button{flex:none;padding:9px 11px;font-size:12px;gap:5px}
-  .seg button span{display:none}
-  .seg button.on span{display:inline}
-  .seg button svg{width:18px;height:18px}
-  .nav{display:none!important}              /* navigation période repliée : on utilise le swipe + bouton Auj. flottant */
+  .tb-right{display:none}            /* mobile : choix de vue via l'onglet "Vue" en bas, pas de doublon */
+  .seg{display:none!important}
+  .nav{display:none!important}
   #fabToday{display:flex}
   #fabToday[data-hide="1"]{display:none}
   .scroll{padding:16px 14px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
@@ -900,7 +895,7 @@ const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
 const ADMIN_PASSWORD="Em@simco1587";
-const APP_VERSION="v16";
+const APP_VERSION="v17";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
