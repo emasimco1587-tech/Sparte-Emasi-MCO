@@ -895,7 +895,7 @@ const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd
 /* stockage local (mémorise mot de passe validé + favori) */
 const PASSWORD="Emasi1587!";
 const ADMIN_PASSWORD="Em@simco1587";
-const APP_VERSION="v17";
+const APP_VERSION="v18";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -955,10 +955,11 @@ function findCols(rows){
       else if(k.startsWith('date de fin'))idx.fin=j;
       else if(k.startsWith('charge'))idx.charge=j;
       else if(k.startsWith('tâche')||k.startsWith('tache'))idx.tache=j;
+      else if(k.startsWith('code imputation')||k.startsWith('imputation'))idx.imput=j;
     });
     if(idx.nom!=null&&idx.deb!=null)return{headerRow:i,idx};
   }
-  return{headerRow:0,idx:{nom:0,ress:1,lib:2,com:3,type:4,charge:10,deb:11,fin:12,tache:14}};
+  return{headerRow:0,idx:{nom:0,ress:1,lib:2,com:3,type:4,charge:10,deb:11,fin:12,tache:14,imput:15}};
 }
 function parse(rows){
   const{headerRow,idx}=findCols(rows);const entries=[];let section='';
@@ -971,7 +972,7 @@ function parse(rows){
     }
     if(!nom||nom.toLowerCase()==='nom-prénom')continue;
     entries.push({nom,date,end:idx.fin!=null?toDate(r[idx.fin]):null,lib:norm(r[idx.lib]),com:norm(r[idx.com]),section,
-      ress:idx.ress!=null?norm(r[idx.ress]):'',tache:idx.tache!=null?norm(r[idx.tache]):'',charge:idx.charge!=null?norm(r[idx.charge]):''});
+      ress:idx.ress!=null?norm(r[idx.ress]):'',tache:idx.tache!=null?norm(r[idx.tache]):'',charge:idx.charge!=null?norm(r[idx.charge]):'',imput:idx.imput!=null?norm(r[idx.imput]):''});
   }
   return entries;
 }
@@ -1447,6 +1448,7 @@ function openAction(id){
     <span>👤 ${esc(e.nom)}</span>
     ${timeStr?`<span>🕒 ${timeStr}</span>`:''}
     ${e.tache?`<span>🏷 ${esc(e.tache)}</span>`:''}
+    ${e.imput?`<span>🧾 ${esc(e.imput)}</span>`:''}
     ${e.ress?`<span>🔧 ${esc(e.ress)}</span>`:''}
     ${e.charge&&e.charge!=='nan'?`<span>⏱ ${esc(e.charge)} h</span>`:''}
   </div>`;
@@ -1628,7 +1630,7 @@ function loadEntries(rawEntries,labelTxt){
   const entries=rawEntries.map(e=>({
     nom:norm(e.nom),date:toDate(e.date),end:e.end?toDate(e.end):null,
     lib:norm(e.lib),com:norm(e.com),section:norm(e.section),
-    ress:norm(e.ress),tache:norm(e.tache),charge:norm(e.charge)
+    ress:norm(e.ress),tache:norm(e.tache),charge:norm(e.charge),imput:norm(e.imput)
   })).filter(e=>e.date&&e.nom);
   if(!entries.length)return false;
   const prevPerson=state.current,prevView=state.view;
@@ -1665,7 +1667,7 @@ function autoLoad(){
 /* ---- exporter les données courantes pour le web (planning-data.json) ---- */
 function isoLocal(d){return d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'';}
 function exportForWeb(){
-  const out=state.entries.map(e=>({nom:e.nom,date:isoLocal(e.date),end:isoLocal(e.end),lib:e.lib,com:e.com,section:e.section,ress:e.ress,tache:e.tache,charge:e.charge}));
+  const out=state.entries.map(e=>({nom:e.nom,date:isoLocal(e.date),end:isoLocal(e.end),lib:e.lib,com:e.com,section:e.section,ress:e.ress,tache:e.tache,charge:e.charge,imput:e.imput||''}));
   const now=new Date();
   const data={generated:`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`,count:out.length,entries:out};
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
