@@ -1,5 +1,5 @@
 // Service worker — cache l'app et les données pour un usage hors-ligne
-const CACHE = 'planning-v18';
+const CACHE = 'planning-v34';
 const ASSETS = [
   '.',
   'index.html',
@@ -7,6 +7,12 @@ const ASSETS = [
   'manifest.webmanifest',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'wallpapers/aqua.jpg',
+  'wallpapers/sunset.jpg',
+  'wallpapers/forest.jpg',
+  'wallpapers/lavender.jpg',
+  'wallpapers/mono.jpg',
+  'wallpapers/aero-dark.jpg',
   'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
 ];
 

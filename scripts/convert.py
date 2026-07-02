@@ -67,9 +67,10 @@ def find_cols(rows):
             elif k.startswith("date de fin"): idx["fin"] = j
             elif k.startswith("charge"): idx["charge"] = j
             elif k.startswith("tâche") or k.startswith("tache"): idx["tache"] = j
+            elif k.startswith("code imputation") or k.startswith("imputation"): idx["imput"] = j
         if "nom" in idx and "deb" in idx:
             return i, idx
-    return 0, {"nom":0,"ress":1,"lib":2,"com":3,"type":4,"charge":10,"deb":11,"fin":12,"tache":14}
+    return 0, {"nom":0,"ress":1,"lib":2,"com":3,"type":4,"charge":10,"deb":11,"fin":12,"tache":14,"imput":15}
 
 def main():
     path = find_xlsx()
@@ -104,6 +105,7 @@ def main():
             "end": fin.strftime("%Y-%m-%dT%H:%M") if fin else "",
             "lib": cell(g(r,"lib")), "com": cell(g(r,"com")), "section": section,
             "ress": cell(g(r,"ress")), "tache": cell(g(r,"tache")), "charge": cell(g(r,"charge")),
+            "imput": cell(g(r,"imput")),
         })
     data = {"generated": datetime.now().strftime("%d/%m/%Y %H:%M"), "count": len(out), "entries": out}
     with open("planning-data.json", "w", encoding="utf-8") as f:
