@@ -1030,22 +1030,50 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
               <li>Une page avec un tableau vide s'affiche : la base est créée. ✅</li>
             </ol>
 
-            <p class="fb-step-h">C. Autoriser la lecture et l'écriture (Règles)</p>
+            <p class="fb-step-h">C. Autoriser l'accès (Règles sécurisées)</p>
             <ol class="set-steps">
               <li>En haut de cette même page, cliquez sur l'onglet <b>« Règles »</b> (Rules).</li>
               <li>Effacez tout le texte présent et collez exactement ceci :</li>
             </ol>
             <pre class="fb-code">{
   "rules": {
-    ".read": true,
-    ".write": true
+    "config": {
+      "teamName": { ".read": true },
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "planning": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "hidden": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "catIcons": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "catStyle": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    }
   }
 }</pre>
             <ol class="set-steps" start="3">
               <li>Cliquez sur <b>« Publier »</b> (Publish). Confirmez si demandé.</li>
             </ol>
+            <p class="notif-note">🔒 Ces règles ferment tout à la base : seul un appareil connecté (via l'app) peut lire, et seul le compte administrateur peut écrire. Rien n'est accessible publiquement.</p>
 
-            <p class="fb-step-h">D. Récupérer la configuration</p>
+            <p class="fb-step-h">D. Activer l'authentification (obligatoire pour la sécurité)</p>
+            <ol class="set-steps">
+              <li>Dans le menu de gauche, cliquez sur <b>« Build » → « Authentication »</b>.</li>
+              <li>Cliquez <b>« Get started »</b> (ou « Commencer »).</li>
+              <li>Dans la liste des fournisseurs, cliquez sur <b>« E-mail/Mot de passe »</b>.</li>
+              <li>Activez l'interrupteur du haut (« E-mail/Mot de passe »), laissez le second désactivé, puis <b>Enregistrer</b>.</li>
+            </ol>
+            <p class="notif-note">Sans cette étape, l'ouverture de l'application et l'espace administrateur ne fonctionneront pas (erreur de connexion Firebase).</p>
+
+            <p class="fb-step-h">E. Récupérer la configuration</p>
             <ol class="set-steps">
               <li>Tout en haut à gauche, cliquez sur la <b>roue dentée ⚙️</b> → <b>« Paramètres du projet »</b>.</li>
               <li>Descendez jusqu'à la section <b>« Vos applications »</b>.</li>
@@ -1075,7 +1103,7 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
         <button class="btn btn-blue" id="fbSave" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Enregistrer & connecter</button>
         <button class="btn btn-ink" id="fbTest" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>Tester la connexion</button>
         <button class="btn btn-ink" id="fbReset" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Effacer la configuration saisie</button>
-        <p class="notif-note">Les règles Firebase à coller (onglet Règles) : <span class="mono">{ "rules": { ".read": true, ".write": true } }</span></p>
+        <p class="notif-note">🔒 Les règles sécurisées (auth requise, écriture réservée à l'admin) et l'activation de l'authentification sont détaillées dans la procédure ci-dessus (étapes C et D).</p>
       </div>
       <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 1 0 0 20 2 2 0 0 0 2-2 2 2 0 0 0-2-2h-1.5a2.5 2.5 0 0 1 0-5H14a6 6 0 0 0 0-12z"/></svg>Couleurs des personnes</h3>
@@ -1104,12 +1132,19 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
       </div>
       <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Mots de passe</h3>
-        <p>Modifier le code d'ouverture de l'application et le code administrateur (enregistrés sur Firebase pour toute l'équipe).</p>
-        <label class="ts-label">Code d'ouverture de l'application</label>
-        <input id="pwOpen" class="ts-input" type="text" placeholder="Code d'accès" autocomplete="off">
-        <label class="ts-label">Code administrateur</label>
-        <input id="pwAdmin" class="ts-input" type="text" placeholder="Code admin" autocomplete="off">
-        <button class="btn btn-blue" id="pwSave" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Enregistrer les mots de passe</button>
+        <p>Ces codes sont désormais vérifiés <b>par Firebase</b> (authentification réelle) — ils ne sont plus stockés en clair. Pour changer un code, indiquez l'ancien puis le nouveau.</p>
+        <label class="ts-label">Code d'ouverture — ancien</label>
+        <input id="pwOpenOld" class="ts-input" type="text" placeholder="Code actuel" autocomplete="off">
+        <label class="ts-label">Code d'ouverture — nouveau</label>
+        <input id="pwOpenNew" class="ts-input" type="text" placeholder="Nouveau code" autocomplete="off">
+        <button class="btn btn-blue" id="pwOpenSave" style="margin-top:10px">Changer le code d'ouverture</button>
+        <div style="height:14px"></div>
+        <label class="ts-label">Code administrateur — ancien</label>
+        <input id="pwAdminOld" class="ts-input" type="text" placeholder="Code actuel" autocomplete="off">
+        <label class="ts-label">Code administrateur — nouveau</label>
+        <input id="pwAdminNew" class="ts-input" type="text" placeholder="Nouveau code" autocomplete="off">
+        <button class="btn btn-blue" id="pwAdminSave" style="margin-top:10px">Changer le code administrateur</button>
+        <p class="notif-note" id="pwFbState"></p>
       </div>
       <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>Configuration locale</h3>
@@ -1171,6 +1206,7 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
 <!-- ===== Firebase (mise à jour automatique du planning + mots de passe partagés) ===== -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 /* A REMPLACER par votre configuration Firebase (console -> Parametres du projet -> Vos applications)
    Ces cles sont concues pour etre publiques ; la securite repose sur les Regles de la base. */
@@ -1185,7 +1221,12 @@ const FIREBASE_CONFIG = {
 };
 const DEFAULT_PASSWORD="Admin123!";
 const DEFAULT_ADMIN_PASSWORD="Admin123!";
-let fbDB=null, fbReady=false, fbActiveConfig=null;
+/* comptes Firebase Auth partagés : un pour l'ouverture de l'app, un pour l'administration.
+   Le mot de passe RÉEL de ces comptes EST le code d'accès / code admin — vérifié par Firebase,
+   jamais stocké en clair dans la base. */
+const OPEN_ACCOUNT_EMAIL="equipe-emasi-planning@compte.local";
+const ADMIN_ACCOUNT_EMAIL="admin-emasi-planning@compte.local";
+let fbDB=null, fbAuth=null, fbReady=false, fbActiveConfig=null;
 function getActiveFbConfig(){
   // priorité à une config saisie dans l'admin (localStorage), sinon la config par défaut du code
   try{ const s=localStorage.getItem('fb_config'); if(s){const o=JSON.parse(s); if(o&&o.apiKey&&o.databaseURL) return o;} }catch(e){}
@@ -1197,6 +1238,7 @@ function initFirebase(){
     if(cfg && cfg.apiKey && cfg.apiKey!=="A_REMPLACER" && cfg.databaseURL){
       if(!firebase.apps.length) firebase.initializeApp(cfg);
       fbDB=firebase.database();
+      fbAuth=firebase.auth();
       fbReady=true; fbActiveConfig=cfg;
     }
   }catch(e){ console.warn('Firebase non initialise :', e); }
@@ -1215,7 +1257,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md'};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v34";
+const APP_VERSION="v37";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -2364,20 +2406,40 @@ document.getElementById('setRefresh').onclick=async()=>{
 
 /* ===== ADMINISTRATEUR (protégé par mot de passe) ===== */
 let adminUnlocked=false;
+let currentAdminPassword="";  // mémorisé le temps de la session, pour pouvoir revenir à l'identité admin après un changement de code d'ouverture
 function requestAdmin(){
   if(adminUnlocked){openAdmin();return;}
   const code=prompt('Code administrateur :');
   if(code===null)return;
-  const ref=adminPassword||DEFAULT_ADMIN_PASSWORD;
-  if(code===ref){adminUnlocked=true;openAdmin();}
-  else alert('Code incorrect.');
+  if(!fbReady){
+    if(code===DEFAULT_ADMIN_PASSWORD){adminUnlocked=true;openAdmin();}
+    else alert('Code incorrect.');
+    return;
+  }
+  if(!code){alert('Code incorrect.');return;}
+  fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL, code).then(()=>{
+    adminUnlocked=true;currentAdminPassword=code;openAdmin();
+  }).catch(err=>{
+    if(['auth/user-not-found','auth/invalid-credential','auth/wrong-password'].includes(err.code)){
+      fbAuth.createUserWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL, code).then(()=>{
+        adminUnlocked=true;currentAdminPassword=code;openAdmin();
+      }).catch(e2=>{
+        if(e2.code==='auth/email-already-in-use')alert('Code incorrect.');
+        else if(e2.code==='auth/weak-password')alert('Ce code est trop court (6 caractères minimum pour la 1ère activation).');
+        else alert('Impossible de créer le compte administrateur.\nVérifiez que « E-mail/Mot de passe » est activé dans Firebase → Authentication → Sign-in method.');
+      });
+    }else if(err.code==='auth/operation-not-allowed'){
+      alert('Configuration requise : activez « E-mail/Mot de passe » dans Firebase (Authentication → Sign-in method), puis réessayez.');
+    }else{
+      alert('Code incorrect.');
+    }
+  });
 }
 function openAdmin(){hideSettings();renderColorList();renderHideList();renderCatIconPicker();adminDataInfoFill();fillFbFields();
-  const po=document.getElementById('pwOpen'),pa=document.getElementById('pwAdmin');
-  if(po)po.value=teamPassword||DEFAULT_PASSWORD;
-  if(pa)pa.value=adminPassword||DEFAULT_ADMIN_PASSWORD;
   const fbs=document.getElementById('adminFbState');
   if(fbs)fbs.textContent=fbReady?'Firebase connecté : les publications sont partagées avec toute l\'équipe.':'Firebase non connecté : renseignez la configuration ci-dessus.';
+  const pfs=document.getElementById('pwFbState');
+  if(pfs)pfs.textContent=fbReady?'Vérifiés par Firebase Authentication (comptes partagés dédiés).':'Firebase non connecté : les codes ne peuvent pas être changés (comparaison locale par défaut uniquement).';
   document.getElementById('admin').classList.add('show');}
 function fillFbFields(){
   const cfg=getActiveFbConfig()||{};
@@ -2389,7 +2451,7 @@ function fillFbFields(){
 function closeAdmin(){document.getElementById('admin').classList.remove('show');}
 function adminDataInfoFill(){const el=document.getElementById('adminDataInfo');if(el)el.innerHTML=state.generated?`Dernière mise à jour : <b>${esc(state.generated)}</b> ${state.srcType?'('+state.srcType+')':''} · ${state.entries.length} affectations`:'Aucune donnée chargée.';}
 document.getElementById('setAdmin').onclick=requestAdmin;
-document.getElementById('setLock').onclick=()=>{lsDel('unlocked');lsDel('unlocked_pw');location.reload();};
+document.getElementById('setLock').onclick=()=>{lsDel('unlocked');lsDel('unlocked_pw');if(fbReady)fbAuth.signOut().finally(()=>location.reload());else location.reload();};
 document.getElementById('adminClose').onclick=()=>{closeAdmin();goPlanning();};
 document.getElementById('adminBack').onclick=()=>{closeAdmin();showSettings();};
 document.getElementById('adminQuit').onclick=()=>{closeAdmin();goPlanning();};
@@ -2515,27 +2577,56 @@ document.getElementById('fbTest').onclick=()=>{
   const st=document.getElementById('fbStatus');
   if(!fbReady){st.innerHTML='<span style="color:#ff9f0a">Non connecté — enregistrez d\'abord la configuration.</span>';return;}
   st.innerHTML='Test en cours…';
-  fbGet('config').then(()=>{st.innerHTML='<span style="color:#30d158">Connexion OK ✔</span>';})
+  fbGet('config/teamName').then(()=>{st.innerHTML='<span style="color:#30d158">Connexion OK ✔</span>';})
     .catch(err=>{st.innerHTML='<span style="color:#ff453a">Échec : vérifiez les règles (.read/.write) et l\'URL.</span>';});
 };
 document.getElementById('fbReset').onclick=()=>{
   if(!confirm('Effacer la configuration Firebase saisie sur cet appareil ?'))return;
   lsDel('fb_config');alert('Configuration effacée. Rechargement…');location.reload();
 };
-document.getElementById('pwSave').onclick=()=>{
-  const op=document.getElementById('pwOpen').value.trim();
-  const ap=document.getElementById('pwAdmin').value.trim();
-  if(!op||!ap){alert('Les deux codes doivent être renseignés.');return;}
-  if(!fbReady){
-    // pas de Firebase : on applique seulement localement (cet appareil)
-    teamPassword=op;adminPassword=ap;
-    alert('Firebase non configuré : les mots de passe sont appliqués sur cet appareil uniquement.');
-    return;
-  }
-  fbSet('config',{openPass:op,adminPass:ap,teamName:teamName||'Planning'}).then(()=>{
-    teamPassword=op;adminPassword=ap;
-    alert('Mots de passe enregistrés ✔ Ils s\'appliquent à toute l\'équipe.');
-  }).catch(err=>alert('Échec : '+err+'\\nVérifiez les règles de sécurité Firebase.'));
+document.getElementById('pwOpenSave').onclick=()=>{
+  const oldP=document.getElementById('pwOpenOld').value.trim();
+  const newP=document.getElementById('pwOpenNew').value.trim();
+  if(!oldP||!newP){alert('Renseignez l\'ancien et le nouveau code.');return;}
+  if(!fbReady){alert('Firebase non connecté : impossible de changer ce code.');return;}
+  const btn=document.getElementById('pwOpenSave');const old=btn.textContent;btn.textContent='Changement…';btn.disabled=true;
+  const restore=()=>{btn.textContent=old;btn.disabled=false;};
+  // on se connecte temporairement en tant que compte "ouverture" avec l'ancien code pour pouvoir changer SON propre mot de passe
+  fbAuth.signInWithEmailAndPassword(OPEN_ACCOUNT_EMAIL, oldP).then(user=>{
+    return user.user.updatePassword(newP);
+  }).then(()=>{
+    restore();
+    document.getElementById('pwOpenOld').value='';document.getElementById('pwOpenNew').value='';
+    alert('Code d\'ouverture changé ✔ Il s\'applique à toute l\'équipe dès la prochaine ouverture.');
+    // revenir à la session administrateur pour continuer le travail en cours
+    if(currentAdminPassword)fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL, currentAdminPassword).catch(()=>{});
+  }).catch(err=>{
+    restore();
+    if(['auth/wrong-password','auth/invalid-credential'].includes(err.code))alert('L\'ancien code saisi est incorrect.');
+    else if(err.code==='auth/weak-password')alert('Le nouveau code est trop court (6 caractères minimum).');
+    else alert('Échec : '+(err.message||err));
+    if(currentAdminPassword)fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL, currentAdminPassword).catch(()=>{});
+  });
+};
+document.getElementById('pwAdminSave').onclick=()=>{
+  const oldP=document.getElementById('pwAdminOld').value.trim();
+  const newP=document.getElementById('pwAdminNew').value.trim();
+  if(!oldP||!newP){alert('Renseignez l\'ancien et le nouveau code.');return;}
+  if(!fbReady){alert('Firebase non connecté : impossible de changer ce code.');return;}
+  const btn=document.getElementById('pwAdminSave');const old=btn.textContent;btn.textContent='Changement…';btn.disabled=true;
+  const restore=()=>{btn.textContent=old;btn.disabled=false;};
+  fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL, oldP).then(user=>{
+    return user.user.updatePassword(newP);
+  }).then(()=>{
+    restore();currentAdminPassword=newP;
+    document.getElementById('pwAdminOld').value='';document.getElementById('pwAdminNew').value='';
+    alert('Code administrateur changé ✔');
+  }).catch(err=>{
+    restore();
+    if(['auth/wrong-password','auth/invalid-credential'].includes(err.code))alert('L\'ancien code saisi est incorrect.');
+    else if(err.code==='auth/weak-password')alert('Le nouveau code est trop court (6 caractères minimum).');
+    else alert('Échec : '+(err.message||err));
+  });
 };
 
 /* --- configuration (sauvegarde / restauration) --- */
@@ -2575,48 +2666,68 @@ if('serviceWorker' in navigator){
 }
 
 /* ---- Verrou + configuration d'équipe ---- */
-let teamPassword="";          // mot de passe d'ouverture (depuis Firebase, sinon défaut)
 let teamName="Planning";
-let adminPassword="";         // mot de passe administrateur (depuis Firebase, sinon défaut)
 function startApp(){ Promise.all([loadHiddenFromFb(),loadCatIconsFromFb(),loadCatStyleFromFb()]).then(autoLoad).catch(autoLoad); }
+function shakeLock(msg){
+  const er=document.getElementById('lockErr');er.textContent=msg||'Code incorrect.';document.getElementById('lockInput').value='';
+  const card=document.querySelector('#lock .lock-card');card.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:240});
+}
 function tryUnlock(){
   const v=document.getElementById('lockInput').value;
-  const ref=teamPassword||DEFAULT_PASSWORD;
-  if(v&&v===ref){lsSet('unlocked','1');lsSet('unlocked_pw',v);document.getElementById('lock').classList.remove('show');startApp();}
-  else{const er=document.getElementById('lockErr');er.textContent='Code incorrect.';document.getElementById('lockInput').value='';
-    const card=document.querySelector('#lock .lock-card');card.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:240});}
+  if(!fbReady){
+    // Mode sans Firebase : repli local simple (pas de vérification serveur)
+    if(v&&v===DEFAULT_PASSWORD){lsSet('unlocked','1');lsSet('unlocked_pw',v);document.getElementById('lock').classList.remove('show');startApp();}
+    else shakeLock();
+    return;
+  }
+  if(!v){shakeLock();return;}
+  const btn=document.getElementById('lockGo');const old=btn.textContent;btn.textContent='Vérification…';btn.disabled=true;
+  const restore=()=>{btn.textContent=old;btn.disabled=false;};
+  fbAuth.signInWithEmailAndPassword(OPEN_ACCOUNT_EMAIL, v).then(()=>{
+    restore();document.getElementById('lock').classList.remove('show');startApp();
+  }).catch(err=>{
+    // "user-not-found" (anciennes versions) OU "invalid-credential"/"wrong-password" (versions récentes,
+    // qui ne distinguent plus "compte inexistant" de "mauvais mot de passe" par sécurité) : on tente
+    // de créer le compte — s'il existait déjà, la création échouera avec "email-already-in-use",
+    // ce qui confirme alors un vrai mauvais mot de passe.
+    if(['auth/user-not-found','auth/invalid-credential','auth/wrong-password'].includes(err.code)){
+      fbAuth.createUserWithEmailAndPassword(OPEN_ACCOUNT_EMAIL, v).then(()=>{
+        restore();document.getElementById('lock').classList.remove('show');startApp();
+      }).catch(e2=>{
+        restore();
+        if(e2.code==='auth/email-already-in-use')shakeLock();
+        else if(e2.code==='auth/weak-password')shakeLock('Ce code est trop court (6 caractères minimum pour la 1ère activation).');
+        else shakeLock('Configuration Firebase incomplète.');
+      });
+    }else if(err.code==='auth/operation-not-allowed'){
+      restore();shakeLock('Activez « E-mail/Mot de passe » dans Firebase (Authentication).');
+    }else{
+      restore();shakeLock();
+    }
+  });
 }
 document.getElementById('lockGo').onclick=tryUnlock;
 document.getElementById('lockInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
 document.getElementById('lockShow').onclick=()=>{const i=document.getElementById('lockInput');i.type=i.type==='password'?'text':'password';};
 
-/* ===== Firebase : configuration (mots de passe) + données ===== */
+/* ===== Firebase : données ===== */
 function fbGet(path){ return fbReady ? fbDB.ref(path).get().then(s=>s.exists()?s.val():null) : Promise.resolve(null); }
 function fbSet(path,val){ return fbReady ? fbDB.ref(path).set(val) : Promise.reject('Firebase non connecté'); }
 
 function bootWithTeam(){
-  // Afficher le verrou TOUT DE SUITE (sauf si déjà déverrouillé sur cet appareil AVEC le bon code),
-  // puis résoudre les mots de passe réels en arrière-plan et re-vérifier.
-  teamPassword=DEFAULT_PASSWORD; adminPassword=DEFAULT_ADMIN_PASSWORD; teamName='Planning';
-  const optimistic=(lsGet('unlocked')==='1'&&lsGet('unlocked_pw'));
-  if(optimistic){ startApp(); } else { showLockNow(); }
-  if(fbReady){
-    fbGet('config').then(cfg=>{
-      if(cfg && (cfg.openPass||cfg.adminPass)){
-        teamPassword=cfg.openPass||DEFAULT_PASSWORD;
-        adminPassword=cfg.adminPass||DEFAULT_ADMIN_PASSWORD;
-        teamName=cfg.teamName||'Planning';
-      }else{
-        fbSet('config',{openPass:DEFAULT_PASSWORD,adminPass:DEFAULT_ADMIN_PASSWORD,teamName:'Planning'}).catch(()=>{});
-      }
-      document.getElementById('lockTeam').textContent=teamName||'Planning';
-      // re-vérification : si le code mémorisé sur cet appareil ne correspond plus au code réel, re-verrouiller.
-      if(optimistic && lsGet('unlocked_pw')!==teamPassword){
-        lsDel('unlocked');lsDel('unlocked_pw');
-        showLockNow();
-      }
-    }).catch(()=>{});
+  teamName='Planning';
+  if(!fbReady){
+    // Mode sans Firebase : verrou local classique
+    if(lsGet('unlocked')==='1'&&lsGet('unlocked_pw')){ startApp(); } else { showLockNow(); }
+    return;
   }
+  // nom d'équipe : lecture publique, avant même toute connexion
+  fbGet('config/teamName').then(n=>{teamName=n||'Planning';const lt=document.getElementById('lockTeam');if(lt)lt.textContent=teamName;}).catch(()=>{});
+  // Firebase Auth mémorise déjà la session sur l'appareil : on regarde si elle existe avant d'afficher le verrou.
+  const unsub=fbAuth.onAuthStateChanged(user=>{
+    unsub();
+    if(user){ startApp(); } else { showLockNow(); }
+  });
 }
 function showLockNow(){
   document.getElementById('lockTeam').textContent=teamName||'Planning';
