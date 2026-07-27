@@ -443,10 +443,23 @@ html[data-icon-size="lg"] .wcard .cat-badge svg{width:16px;height:16px}
 }
 
 /* ===== Verrou mot de passe ===== */
-#lock,#teamSetup{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:28px;
+#lock,#teamSetup,#fbOffer,#fbWizard{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:28px;
   background:rgba(2,4,10,.7);backdrop-filter:blur(40px) saturate(1.7) brightness(1.1);-webkit-backdrop-filter:blur(40px) saturate(1.7) brightness(1.1);
   background-image:radial-gradient(700px 500px at 100% -8%,rgba(10,132,255,.34),transparent 56%),radial-gradient(680px 520px at -8% 8%,rgba(100,210,255,.2),transparent 56%);}
-#lock.show,#teamSetup.show{display:flex;animation:fade .2s ease}
+#lock.show,#teamSetup.show,#fbOffer.show,#fbWizard.show{display:flex;animation:fade .2s ease}
+#fbWizard{z-index:95;align-items:flex-start;overflow-y:auto;padding-top:40px;padding-bottom:40px}
+.fbwiz-card{width:min(480px,100%);max-height:none;padding:28px 26px 22px}
+.fbwiz-progress{display:flex;justify-content:center;gap:6px;margin-bottom:18px}
+.fbwiz-progress span.dot{width:7px;height:7px;border-radius:50%;background:var(--line-2);display:inline-block;transition:.2s}
+.fbwiz-progress span.dot.on{background:var(--blue);width:20px;border-radius:4px}
+.fbwiz-step{display:none}
+.fbwiz-step.show{display:block;animation:fade .18s ease}
+.fbwiz-step h2{font-family:'Fraunces';font-size:21px;margin-bottom:12px}
+.fbwiz-step p{font-size:13.5px;line-height:1.55;color:var(--soft)}
+.fbwiz-step .set-steps{margin-top:2px}
+.fbwiz-nav{display:flex;gap:10px;margin-top:20px}
+.fbwiz-nav #fbwizPrev{width:auto;flex:none;padding:12px 16px;margin-top:0}
+.fbwiz-nav #fbwizNext{margin-top:0}
 .ts-label{display:block;font-size:12px;font-weight:700;color:var(--soft);margin:12px 0 6px}
 .ts-input{width:100%;padding:13px 14px;border-radius:13px;font-size:15px;border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink);margin-bottom:4px}
 .ts-input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
@@ -522,6 +535,7 @@ html[data-theme="light"] #updateToast{background:rgba(255,255,255,.9)}
 .color-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto}
 .color-row{display:flex;align-items:center;gap:11px;padding:7px 8px;border-radius:11px;background:var(--glass-2);border:1px solid var(--line)}
 .hide-list{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto;margin-top:4px}
+.view-toggle-list{display:flex;flex-direction:column;gap:7px;margin-top:4px}
 .cat-icon-picker{display:flex;flex-direction:column;gap:12px;margin-top:6px}
 .cip-size-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:13px;background:var(--glass-2);border:1px solid var(--line);margin-bottom:2px;flex-wrap:wrap}
 .cip-size-label{font-size:12.5px;font-weight:700;color:var(--soft)}
@@ -567,6 +581,8 @@ html[data-theme="light"] .vue-item.on,html[data-theme="light"] .notif-opt{color:
 @media(min-width:901px){.vue-list{max-width:560px;margin:0 auto;width:100%}}
 
 /* ===== Vue Disponibilités ===== */
+.dispo-experimental{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:var(--soft);
+  background:rgba(255,159,10,.1);border:1px solid rgba(255,159,10,.28);border-radius:13px;padding:11px 13px;margin-bottom:12px}
 .dispo-legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:4px;padding:2px}
 .dispo-legend .dl{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--soft);font-weight:600}
 .dispo-legend .dot{width:11px;height:11px;border-radius:50%}
@@ -576,6 +592,7 @@ html[data-theme="light"] .vue-item.on,html[data-theme="light"] .notif-opt{color:
 .dispo-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;padding:4px 11px 4px 5px;border-radius:20px;background:var(--glass-2);border:1px solid var(--line);cursor:pointer;transition:.12s}
 .dispo-chip:active{transform:scale(.96)}
 .dispo-chip.mob{border-color:rgba(255,159,10,.4)}
+.dispo-chip.abs{border-color:rgba(138,147,166,.4);opacity:.82}
 .dispo-chip .av{width:24px;height:24px;font-size:10px}
 
 /* filtre de la vue équipe */
@@ -796,6 +813,132 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
 </head>
 <body>
 
+<!-- PROPOSITION DE CONFIGURATION FIREBASE : si aucune connexion n'est encore configurée -->
+<div id="fbOffer">
+  <div class="lock-card" style="text-align:center">
+    <div class="lock-logo"><img src="icons/icon-192.png" alt="Planning"></div>
+    <h2>Connecter Firebase ?</h2>
+    <p style="margin-bottom:22px">Cette application n'est pas encore connectée à Firebase. En la configurant, le planning et les mots de passe seront partagés automatiquement avec toute l'équipe. Sans ça, l'application fonctionne seule, sur cet appareil uniquement.</p>
+    <button class="lock-btn" id="fbOfferYes">Oui, configurer maintenant</button>
+    <button class="ts-skip" id="fbOfferNo" style="margin-top:10px">Plus tard, utiliser en solo</button>
+  </div>
+</div>
+
+<!-- ASSISTANT DE CONFIGURATION FIREBASE : étape par étape -->
+<div id="fbWizard">
+  <div class="lock-card fbwiz-card" style="text-align:left">
+    <div class="fbwiz-progress"><span id="fbwizDots"></span></div>
+
+    <div class="fbwiz-step" data-step="0">
+      <h2 style="text-align:center">Configurer Firebase</h2>
+      <p>Firebase (gratuit, par Google) va stocker le planning et les mots de passe pour toute l'équipe. Comptez environ <b>10 minutes</b>, en 5 étapes courtes. Gardez cet écran ouvert dans un onglet, et ouvrez <b>console.firebase.google.com</b> dans un autre.</p>
+    </div>
+
+    <div class="fbwiz-step" data-step="1">
+      <h2 style="text-align:center">1 · Créer le projet</h2>
+      <ol class="set-steps">
+        <li>Allez sur <span class="mono">console.firebase.google.com</span>, connectez-vous avec un compte Google.</li>
+        <li>Cliquez <b>« Créer un projet »</b>.</li>
+        <li>Donnez un nom (ex. le nom de votre équipe), <b>Continuer</b>.</li>
+        <li>Désactivez Google Analytics, <b>Créer le projet</b>, patientez, puis <b>Continuer</b>.</li>
+      </ol>
+    </div>
+
+    <div class="fbwiz-step" data-step="2">
+      <h2 style="text-align:center">2 · Créer la base de données</h2>
+      <ol class="set-steps">
+        <li>Menu de gauche → <b>Build → Realtime Database</b>.</li>
+        <li><b>Créer une base de données</b> → emplacement <b>Belgium (europe-west1)</b> → Suivant.</li>
+        <li>Choisissez <b>« Démarrer en mode test »</b> → <b>Activer</b>.</li>
+      </ol>
+    </div>
+
+    <div class="fbwiz-step" data-step="3">
+      <h2 style="text-align:center">3 · Sécuriser (Règles)</h2>
+      <ol class="set-steps">
+        <li>Dans Realtime Database, onglet <b>« Règles »</b> en haut.</li>
+        <li>Effacez tout, collez ceci :</li>
+      </ol>
+      <pre class="fb-code">{
+  "rules": {
+    "config": {
+      "teamName": { ".read": true },
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "planning": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "hidden": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "catIcons": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "catStyle": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "enabledViews": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    }
+  }
+}</pre>
+      <ol class="set-steps" start="3"><li>Cliquez <b>Publier</b>.</li></ol>
+    </div>
+
+    <div class="fbwiz-step" data-step="4">
+      <h2 style="text-align:center">4 · Activer l'authentification</h2>
+      <ol class="set-steps">
+        <li>Menu de gauche → <b>Build → Authentication</b> → <b>Get started</b>.</li>
+        <li>Cliquez <b>« E-mail/Mot de passe »</b> dans la liste.</li>
+        <li>Activez le premier interrupteur → <b>Enregistrer</b>.</li>
+      </ol>
+    </div>
+
+    <div class="fbwiz-step" data-step="5">
+      <h2 style="text-align:center">5 · Récupérer la configuration</h2>
+      <ol class="set-steps">
+        <li>Roue dentée ⚙️ (en haut à gauche) → <b>Paramètres du projet</b>.</li>
+        <li>Section <b>« Vos applications »</b> → icône <b>&lt;/&gt;</b> (Web).</li>
+        <li>Surnom au choix, <b>ne cochez pas</b> Hosting, → <b>Enregistrer l'application</b>.</li>
+        <li>Recopiez les 7 valeurs affichées ci-dessous :</li>
+      </ol>
+      <label class="ts-label">apiKey</label>
+      <input id="wzApiKey" class="ts-input" type="text" placeholder="AIza..." autocomplete="off">
+      <label class="ts-label">authDomain</label>
+      <input id="wzAuthDomain" class="ts-input" type="text" placeholder="projet.firebaseapp.com" autocomplete="off">
+      <label class="ts-label">databaseURL</label>
+      <input id="wzDbUrl" class="ts-input" type="text" placeholder="https://projet-default-rtdb.europe-west1.firebasedatabase.app" autocomplete="off">
+      <label class="ts-label">projectId</label>
+      <input id="wzProjectId" class="ts-input" type="text" placeholder="projet" autocomplete="off">
+      <label class="ts-label">storageBucket</label>
+      <input id="wzStorage" class="ts-input" type="text" placeholder="projet.appspot.com" autocomplete="off">
+      <label class="ts-label">messagingSenderId</label>
+      <input id="wzSender" class="ts-input" type="text" placeholder="123456789" autocomplete="off">
+      <label class="ts-label">appId</label>
+      <input id="wzAppId" class="ts-input" type="text" placeholder="1:123:web:abc..." autocomplete="off">
+    </div>
+
+    <div class="fbwiz-step" data-step="6">
+      <h2 style="text-align:center" id="wzResultTitle">Connexion…</h2>
+      <p id="wzResultText" style="text-align:center">Vérification en cours…</p>
+      <button class="btn btn-blue" id="wzDownload" style="display:none;width:100%;margin-top:10px;justify-content:center">📥 Télécharger firebase-config.json</button>
+      <button class="lock-btn" id="wzContinue" style="display:none;margin-top:10px">Continuer vers l'application</button>
+      <button class="ts-skip" id="wzRetry" style="display:none">‹ Revoir les valeurs saisies</button>
+    </div>
+
+    <div class="fbwiz-nav">
+      <button class="ts-skip" id="fbwizPrev">‹ Précédent</button>
+      <button class="lock-btn" id="fbwizNext" style="flex:1">Suivant ›</button>
+    </div>
+    <button class="ts-skip" id="fbwizCancel" style="margin-top:10px">Annuler et utiliser en solo</button>
+  </div>
+</div>
+
 <!-- VERROU : mot de passe à la première ouverture -->
 <div id="lock">
   <div class="lock-card">
@@ -810,6 +953,7 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
     </div>
     <button class="lock-btn" id="lockGo">Déverrouiller</button>
     <div id="lockErr"></div>
+    <button class="ts-skip" id="lockFbLink" style="margin-top:16px">⚙️ Paramètres de connexion Firebase</button>
   </div>
 </div>
 
@@ -1056,6 +1200,10 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
     "catStyle": {
       ".read": "auth != null",
       ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
+    },
+    "enabledViews": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'admin-emasi-planning@compte.local'"
     }
   }
 }</pre>
@@ -1081,9 +1229,9 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
               <li>Donnez un surnom (ex. <b>EMASI</b>), <b>ne cochez pas</b> « Hosting », puis <b>Enregistrer l'application</b>.</li>
               <li>Un bloc de code apparaît avec <span class="mono">const firebaseConfig = {…}</span>.</li>
               <li>Recopiez chaque valeur (entre les guillemets) dans les champs ci-dessous. Exemple : la ligne <span class="mono">apiKey: "AIza…"</span> → mettez <span class="mono">AIza…</span> dans le champ « apiKey ».</li>
-              <li>Cliquez enfin sur <b>« Enregistrer &amp; connecter »</b> en bas. L'app se recharge et se connecte.</li>
+              <li>Cliquez sur <b>« Enregistrer & connecter »</b> pour tester sur cet appareil, puis sur <b>« Télécharger firebase-config.json »</b> et déposez ce fichier à la racine de votre dépôt GitHub (à côté de <span class="mono">index.html</span>) pour que toute l'équipe se connecte automatiquement.</li>
             </ol>
-            <p class="notif-note">💡 Astuce : laissez l'onglet Firebase ouvert pendant que vous recopiez les 7 valeurs. Vous pouvez copier-coller chaque valeur une par une.</p>
+            <p class="notif-note">💡 La configuration Firebase vit dans son propre fichier (<span class="mono">firebase-config.json</span>), séparé de <span class="mono">index.html</span> : vous pouvez ainsi mettre à jour l'application sans jamais risquer de casser la connexion Firebase.</p>
           </div>
         </details>
         <label class="ts-label">apiKey</label>
@@ -1100,8 +1248,9 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
         <input id="fbSender" class="ts-input" type="text" placeholder="123456789" autocomplete="off">
         <label class="ts-label">appId</label>
         <input id="fbAppId" class="ts-input" type="text" placeholder="1:123:web:abc..." autocomplete="off">
-        <button class="btn btn-blue" id="fbSave" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Enregistrer & connecter</button>
+        <button class="btn btn-blue" id="fbSave" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Enregistrer & connecter (cet appareil)</button>
         <button class="btn btn-ink" id="fbTest" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>Tester la connexion</button>
+        <button class="btn btn-amber" id="fbDownload" style="margin-top:10px">📥 Télécharger firebase-config.json (pour toute l'équipe)</button>
         <button class="btn btn-ink" id="fbReset" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Effacer la configuration saisie</button>
         <p class="notif-note">🔒 Les règles sécurisées (auth requise, écriture réservée à l'admin) et l'activation de l'authentification sont détaillées dans la procédure ci-dessus (étapes C et D).</p>
       </div>
@@ -1115,6 +1264,11 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>Masquer des personnes</h3>
         <p>Les personnes masquées disparaissent <b>partout</b> dans l'application (listes, équipe, disponibilités, recherche) pour <b>toute l'équipe</b>.</p>
         <div class="hide-list" id="hideList"></div>
+      </div>
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Vues visibles</h3>
+        <p>Choisissez les vues accessibles à <b>toute l'équipe</b> (décochez pour masquer une vue partout dans l'application).</p>
+        <div class="view-toggle-list" id="viewToggleList"></div>
       </div>
       <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M9 11l2 2 4-4"/></svg>Icônes des catégories</h3>
@@ -1208,17 +1362,9 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-/* A REMPLACER par votre configuration Firebase (console -> Parametres du projet -> Vos applications)
-   Ces cles sont concues pour etre publiques ; la securite repose sur les Regles de la base. */
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDsgRbDhzAA0FL6rSYt-lnWYP5MLOm_6Vc",
-  authDomain: "sparte-emasi.firebaseapp.com",
-  databaseURL: "https://sparte-emasi-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "sparte-emasi",
-  storageBucket: "sparte-emasi.firebasestorage.app",
-  messagingSenderId: "404986559109",
-  appId: "1:404986559109:web:5d26cb2500c9249d8507ec"
-};
+/* La configuration Firebase vit dans un fichier séparé : firebase-config.json (à la racine du dépôt).
+   Ainsi, modifier index.html ne touche jamais à la connexion Firebase de l'équipe.
+   Ces clés sont conçues pour être publiques ; la sécurité repose sur les Règles de la base. */
 const DEFAULT_PASSWORD="Admin123!";
 const DEFAULT_ADMIN_PASSWORD="Admin123!";
 /* comptes Firebase Auth partagés : un pour l'ouverture de l'app, un pour l'administration.
@@ -1227,15 +1373,25 @@ const DEFAULT_ADMIN_PASSWORD="Admin123!";
 const OPEN_ACCOUNT_EMAIL="equipe-emasi-planning@compte.local";
 const ADMIN_ACCOUNT_EMAIL="admin-emasi-planning@compte.local";
 let fbDB=null, fbAuth=null, fbReady=false, fbActiveConfig=null;
-function getActiveFbConfig(){
-  // priorité à une config saisie dans l'admin (localStorage), sinon la config par défaut du code
+let _fbFileConfig=null; // false = fichier absent/invalide, null = pas encore vérifié, objet = config valide
+function getLocalFbOverride(){
   try{ const s=localStorage.getItem('fb_config'); if(s){const o=JSON.parse(s); if(o&&o.apiKey&&o.databaseURL) return o;} }catch(e){}
-  return FIREBASE_CONFIG;
+  return null;
 }
-function initFirebase(){
+function fetchFbConfigFile(){
+  if(_fbFileConfig!==null) return Promise.resolve(_fbFileConfig);
+  return fetch('firebase-config.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(o=>{
+    _fbFileConfig=(o&&o.apiKey&&o.databaseURL)?o:false;
+    return _fbFileConfig;
+  }).catch(()=>{_fbFileConfig=false;return false;});
+}
+function getActiveFbConfig(){
+  // synchrone : utilisé pour préremplir les champs (admin / assistant) une fois le premier chargement effectué
+  return getLocalFbOverride()||fbActiveConfig||null;
+}
+function applyFbConfig(cfg){
   try{
-    const cfg=getActiveFbConfig();
-    if(cfg && cfg.apiKey && cfg.apiKey!=="A_REMPLACER" && cfg.databaseURL){
+    if(cfg && cfg.apiKey && cfg.databaseURL){
       if(!firebase.apps.length) firebase.initializeApp(cfg);
       fbDB=firebase.database();
       fbAuth=firebase.auth();
@@ -1243,7 +1399,13 @@ function initFirebase(){
     }
   }catch(e){ console.warn('Firebase non initialise :', e); }
 }
-initFirebase();
+function initFirebase(){
+  // priorité à une config saisie dans l'admin (localStorage, propre à cet appareil),
+  // sinon le fichier partagé firebase-config.json (déposé sur GitHub, partagé par toute l'équipe)
+  const local=getLocalFbOverride();
+  if(local){ applyFbConfig(local); return Promise.resolve(); }
+  return fetchFbConfigFile().then(cfg=>{ if(cfg) applyFbConfig(cfg); });
+}
 
 </script>
 
@@ -1255,9 +1417,9 @@ const DOW=['dim','lun','mar','mer','jeu','ven','sam'];
 const DOW_FULL=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
-const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md'};
+const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v37";
+const APP_VERSION="v44";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -1337,8 +1499,15 @@ function parse(rows){
   for(let i=headerRow+1;i<rows.length;i++){
     const r=rows[i]||[];const nom=norm(r[idx.nom]);const date=toDate(idx.deb!=null?r[idx.deb]:null);
     if(!date){
-      const other=norm(r[idx.lib])||norm(r[idx.com])||(idx.type!=null&&norm(r[idx.type]))||(idx.ress!=null&&norm(r[idx.ress]));
-      if(nom&&nom.toLowerCase()!=='nom-prénom'&&!other)section=nom;
+      // ligne « titre de chantier » : selon l'export, le titre est soit dans Nom-Prénom, soit dans Ressource —
+      // dans les deux cas, aucun autre champ (libellé/commentaire/type) ne doit être rempli sur cette ligne.
+      const lib=norm(r[idx.lib]),com=norm(r[idx.com]),type=(idx.type!=null&&norm(r[idx.type]))||'';
+      const ressVal=idx.ress!=null?norm(r[idx.ress]):'';
+      const hasOther=lib||com||type;
+      if(!hasOther){
+        if(nom&&nom.toLowerCase()!=='nom-prénom'&&!ressVal)section=nom;
+        else if(ressVal&&!nom)section=ressVal;
+      }
       continue;
     }
     if(!nom||nom.toLowerCase()==='nom-prénom')continue;
@@ -1508,7 +1677,7 @@ function renderToday(){
         ${catBadge(categorize(e))}
         ${e.section?`<span class="tag">${esc(e.section)}</span>`:''}
         ${timeStr?`<span class="today-time">${timeStr}</span>`:''}
-        <div class="today-lib">${esc(e.lib||e.section||'Affectation')}</div>
+        <div class="today-lib">${esc(e.lib||e.section||e.tache||'Affectation')}</div>
         ${e.com?`<div class="today-com">${comHTML(e.com)}</div>`:''}
         <div class="today-team">
           <div class="tt-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>${tm.length?`Sur le terrain avec ${tm.length} personne${tm.length>1?'s':''}`:'En autonomie'}</div>
@@ -1555,7 +1724,7 @@ function renderTeam(){
       html+='<div class="team-rows">';
       for(const e of dayEntries){
         const col=state.color.get(e.nom)||'#8a93a6';
-        const label=e.lib||e.section||e.com.slice(0,60)||'Affectation';
+        const label=e.lib||e.section||e.tache||e.com.slice(0,60)||'Affectation';
         const t=fmtTime(e.date);
         html+=`<div class="trow" data-id="${e._id}">
           <span class="tp"><span class="av-mini" style="background:${col}26;color:${textCol(col)}">${initials(e.nom)}</span><span class="pn">${esc(e.nom)}</span></span>
@@ -1588,7 +1757,7 @@ function categorize(e){
   const tache=(e.tache||'').toUpperCase();
   const blob=((e.lib||'')+' '+(e.com||'')+' '+(e.section||'')+' '+(e.tache||'')).toLowerCase();
   // absences / congés
-  if(/^(ca|abs|jrtt|rtt|cp)\b/.test(tache)||/cong[ée]|vacance|repos|maladie|absent|\brtt\b|\bjrtt\b/.test(blob))return 'absence';
+  if(/^(ca|abs|jrtt|rtt|cp)\b/i.test(tache)||/cong[ée]|vacance|repos|maladie|absent|\brtt\b|\bjrtt\b/.test(blob))return 'absence';
   // formation / école
   if(/^form|^ecole/.test(tache)||/formation|\bécole\b|\becole\b/.test(blob))return 'formation';
   // dépannage / astreinte / temps réel
@@ -1670,6 +1839,25 @@ function saveCatStyleToFb(){
   applyIconSize();
   if(!fbReady){alert('Firebase non connecté : le choix ne sera pas partagé.');return Promise.resolve();}
   return fbSet('catStyle',{colors:state.catColors,size:state.iconSize}).catch(err=>alert('Échec enregistrement : '+err));
+}
+const ALL_VIEWS=['today','week','agenda','month','team','chantiers','dispo'];
+function isViewEnabled(v){ return !state.enabledViews || state.enabledViews[v]!==false; }
+function loadEnabledViewsFromFb(){
+  if(!fbReady)return Promise.resolve();
+  return fbGet('enabledViews').then(o=>{state.enabledViews=(o&&typeof o==='object')?o:null;}).catch(()=>{});
+}
+function saveEnabledViewsToFb(){
+  if(!fbReady){alert('Firebase non connecté : le choix ne sera pas partagé.');return Promise.resolve();}
+  return fbSet('enabledViews',state.enabledViews).catch(err=>alert('Échec enregistrement : '+err));
+}
+function applyEnabledViews(){
+  document.querySelectorAll('#viewSeg button[data-v]').forEach(b=>{b.style.display=isViewEnabled(b.dataset.v)?'':'none';});
+  // si la vue actuellement affichée vient d'être désactivée, basculer sur la première vue encore disponible
+  if(!isViewEnabled(state.view)){
+    const fallback=ALL_VIEWS.find(v=>isViewEnabled(v))||'today';
+    state.view=fallback;
+    document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===fallback));
+  }
 }
 
 /* nom lisible d'un chantier : Section (vrai nom) > Libellé > Tâche (code) */
@@ -1776,7 +1964,7 @@ function renderDispo(){
   document.getElementById('periodLbl').textContent='Semaine du '+lbl;
   const reals=state.people.filter(n=>!SPECIAL.test(n));
   const today=new Date();
-  let html='<div class="chan-wrap"><div class="dispo-legend"><span class="dl"><span class="dot" style="background:#30d158"></span>Libre (rien de prévu)</span><span class="dl"><span class="dot" style="background:#ff9f0a"></span>Mobilisable (dépannage / temps réel)</span></div>';
+  let html='<div class="chan-wrap"><div class="dispo-experimental">⚠️ <b>Fonctionnalité expérimentale</b> — la détection « Libre / Mobilisable / Absent » dépend de la façon dont l\'export Sparte a été réalisé (libellés, tâches, codes utilisés). Vérifiez les résultats avant de vous y fier entièrement.</div><div class="dispo-legend"><span class="dl"><span class="dot" style="background:#30d158"></span>Libre (rien de prévu)</span><span class="dl"><span class="dot" style="background:#ff9f0a"></span>Mobilisable (dépannage / temps réel)</span><span class="dl"><span class="dot" style="background:#8a93a6"></span>Absent (congé / RTT / CET / maladie)</span></div>';
   let scrollId=null;
   for(let i=0;i<5;i++){
     const d=addDays(mon,i);const isT=sameDay(d,today);if(isT)scrollId='dispoDay'+i;
@@ -1790,7 +1978,9 @@ function renderDispo(){
     const libres=reals.filter(n=>!catByAgent.has(n));
     // mobilisables = agents en dépannage CE jour (temps réel inclus dans 'depannage')
     const mobil=reals.filter(n=>catByAgent.has(n)&&catByAgent.get(n).has('depannage'));
-    const total=libres.length+mobil.length;
+    // absents = congé / RTT / CET / maladie ce jour (ni libres, ni mobilisables) — sinon ils disparaissaient de la vue
+    const absents=reals.filter(n=>catByAgent.has(n)&&!catByAgent.get(n).has('depannage')&&catByAgent.get(n).has('absence'));
+    const total=libres.length+mobil.length+absents.length;
     html+=`<div class="chan-day${isT?' is-today':''}"${isT?' id="dispoDay'+i+'"':''}>
       <div class="chan-day-h"><span class="cdh-day">${WD_NAMES[i]}</span><span class="cdh-date">${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}</span>${isT?'<span class="today-pill">Aujourd\'hui</span>':''}<span class="cdh-c">${total} dispo</span></div>`;
     if(!total){
@@ -1807,6 +1997,12 @@ function renderDispo(){
         html+='<div class="dispo-group"><div class="dg-h" style="color:#ff9f0a">Mobilisables (dépannage / temps réel) · '+mobil.length+'</div><div class="dispo-chips">';
         for(const n of mobil){const col=state.color.get(n)||'#8a93a6';
           html+=`<span class="dispo-chip mob" data-name="${esc(n)}"><span class="av" style="background:${col}33;color:${textCol(col)}">${initials(n)}</span>${esc(n.split(' ')[0])}</span>`;}
+        html+='</div></div>';
+      }
+      if(absents.length){
+        html+='<div class="dispo-group"><div class="dg-h" style="color:#8a93a6">Absents (congé / RTT / CET / maladie) · '+absents.length+'</div><div class="dispo-chips">';
+        for(const n of absents){const col=state.color.get(n)||'#8a93a6';
+          html+=`<span class="dispo-chip abs" data-name="${esc(n)}"><span class="av" style="background:${col}33;color:${textCol(col)}">${initials(n)}</span>${esc(n.split(' ')[0])}</span>`;}
         html+='</div></div>';
       }
       html+='</div>';
@@ -1838,7 +2034,7 @@ function renderWeek(){
     if(!evs.length)html+='<div class="wcol-empty">—</div>';
     else for(const e of evs){
       const tm=teammates(e);
-      const label=e.lib||e.section||e.com.slice(0,60)||'Affectation';
+      const label=e.lib||e.section||e.tache||e.com.slice(0,60)||'Affectation';
       const t=fmtTime(e.date);
       html+=`<div class="wcard" data-id="${e._id}">${catBadge(categorize(e),18)}<div class="wl">${esc(label)}</div>
         <div class="wt">${e.tache?esc(e.tache):''}${(e.tache&&t)?' · ':''}${t?`<span class="wt-time">${t}</span>`:''}</div>
@@ -1953,7 +2149,7 @@ function renderMonth(){
     const max=3;
     evs.slice(0,max).forEach(e=>{
       const col=state.color.get(e.nom)||'var(--blue)';
-      const label=e.lib||e.section||e.com.slice(0,40)||'Affectation';
+      const label=e.lib||e.section||e.tache||e.com.slice(0,40)||'Affectation';
       html+=`<div class="pill" data-id="${e._id}" title="${esc(label)}"><span class="pdot" style="background:${col}"></span><span class="pl">${esc(label)}</span></div>`;
     });
     if(evs.length>max)html+=`<div class="pill more" data-more="${dd}">+${evs.length-max}</div>`;
@@ -1981,7 +2177,7 @@ function openAction(id){
   const t=fmtTime(e.date),tEnd=fmtTime(e.end);const timeStr=t?(tEnd?`${t} – ${tEnd}`:t):'';
   let html='';
   html+=`<div>${e.section?`<span class="tag" style="display:inline-block;margin-bottom:8px">${esc(e.section)}</span>`:''}
-    <div class="det-lib">${esc(e.lib||e.section||'Affectation')}</div></div>`;
+    <div class="det-lib">${esc(e.lib||e.section||e.tache||'Affectation')}</div></div>`;
   html+=`<div class="det-meta">
     <span>👤 ${esc(e.nom)}</span>
     ${timeStr?`<span>🕒 ${timeStr}</span>`:''}
@@ -2030,7 +2226,7 @@ function runGlobalSearch(){
   }
   cnt.textContent=res.length?`${res.length} résultat${res.length>1?'s':''}${res.length>=200?'+ (affinez la recherche)':''}`:'Aucun résultat.';
   box.innerHTML=res.map(e=>{
-    const label=e.lib||e.section||'Affectation';
+    const label=e.lib||e.section||e.tache||'Affectation';
     return `<div class="sresult" data-id="${e._id}">
       <div class="sr-top"><span class="av" style="width:24px;height:24px;font-size:10px">${initials(e.nom)}</span>
         <span class="sr-name">${esc(e.nom)}</span>
@@ -2088,6 +2284,7 @@ function showApp(){
   document.getElementById('app').style.display='grid';
   ['searchTop','settingsTop','clock'].forEach(id=>document.getElementById(id).style.display='flex');
   syncNav();renderStats();renderPeople();
+  applyEnabledViews();
   maybeShowUpdateToast();
   // favori : si défini et présent dans les données -> affichage direct
   const fav=lsGet('fav_person');
@@ -2238,7 +2435,7 @@ function buildPayload(){
   return {generated:`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,count:out.length,entries:out};
 }
 function publishToFirebase(){
-  if(!fbReady){alert("Firebase n'est pas configuré. Renseignez FIREBASE_CONFIG dans le fichier index.html.");return;}
+  if(!fbReady){alert("Firebase n'est pas configuré. Renseignez firebase-config.json (voir Réglages → Espace administrateur → Connexion Firebase).");return;}
   if(!state.entries.length){alert('Aucune donnée à publier. Importez d\'abord un fichier.');return;}
   const btn=document.getElementById('adminPublish');const old=btn?btn.textContent:'';if(btn)btn.textContent='Publication…';
   const data=buildPayload();
@@ -2376,7 +2573,8 @@ const VIEW_LABEL={today:'Ma journée',week:'Semaine',agenda:'Agenda',month:'Mois
 const VIEW_DESC={today:'Mes interventions du jour',week:'Lundi à vendredi',agenda:'Liste chronologique',month:'Calendrier mensuel',team:'Toute l\'équipe, par couleur',chantiers:'Par chantier et par jour',dispo:'Agents libres ou mobilisables'};
 function openVuePicker(){
   const box=document.getElementById('vueList');box.innerHTML='';
-  for(const v of ['today','week','agenda','month','team','chantiers','dispo']){
+  for(const v of ALL_VIEWS){
+    if(!isViewEnabled(v))continue;
     const b=document.createElement('button');b.className='vue-item'+(state.view===v?' on':'');
     b.innerHTML=`<span class="vi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${VIEW_ICON[v]}</svg></span>
       <span><span class="vi-t">${VIEW_LABEL[v]}</span><span class="vi-d">${VIEW_DESC[v]}</span></span>
@@ -2435,7 +2633,7 @@ function requestAdmin(){
     }
   });
 }
-function openAdmin(){hideSettings();renderColorList();renderHideList();renderCatIconPicker();adminDataInfoFill();fillFbFields();
+function openAdmin(){hideSettings();renderColorList();renderHideList();renderCatIconPicker();renderViewToggleList();adminDataInfoFill();fillFbFields();
   const fbs=document.getElementById('adminFbState');
   if(fbs)fbs.textContent=fbReady?'Firebase connecté : les publications sont partagées avec toute l\'équipe.':'Firebase non connecté : renseignez la configuration ci-dessus.';
   const pfs=document.getElementById('pwFbState');
@@ -2515,6 +2713,26 @@ function renderCatIconPicker(){
     renderMain();
   });
 }
+function renderViewToggleList(){
+  const box=document.getElementById('viewToggleList');if(!box)return;box.innerHTML='';
+  for(const v of ALL_VIEWS){
+    const on=isViewEnabled(v);
+    const row=document.createElement('div');row.className='hide-row';
+    row.innerHTML=`<span class="tp" style="display:flex;align-items:center;gap:10px">
+        <span class="cat-badge" style="width:26px;height:26px;background:rgba(10,132,255,.14);color:var(--blue-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${VIEW_ICON[v]}</svg></span>
+        <span class="hr-name">${esc(VIEW_LABEL[v])}</span>
+      </span>
+      <button class="hr-toggle${on?' on':''}" role="switch" aria-checked="${on}"><span class="hr-knob"></span></button>`;
+    row.querySelector('.hr-toggle').onclick=()=>{
+      state.enabledViews=state.enabledViews?{...state.enabledViews}:Object.fromEntries(ALL_VIEWS.map(x=>[x,true]));
+      state.enabledViews[v]=!isViewEnabled(v);
+      saveEnabledViewsToFb();
+      renderViewToggleList();
+      applyEnabledViews();
+    };
+    box.appendChild(row);
+  }
+}
 function renderHideList(){
   const box=document.getElementById('hideList');if(!box)return;box.innerHTML='';
   // tous les noms réels (à partir de la liste complète, masqués inclus)
@@ -2572,6 +2790,13 @@ document.getElementById('fbSave').onclick=()=>{
   lsSet('fb_config',JSON.stringify(cfg));
   alert('Configuration enregistrée. L\'application va se recharger pour se connecter à Firebase.');
   location.reload();
+};
+document.getElementById('fbDownload').onclick=()=>{
+  const cfg=readFbFields();
+  if(!cfg.apiKey||!cfg.databaseURL){alert('Au minimum « apiKey » et « databaseURL » sont nécessaires.');return;}
+  const blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='firebase-config.json';document.body.appendChild(a);a.click();a.remove();
+  alert('Fichier téléchargé. Déposez-le à la racine de votre dépôt GitHub, à côté de index.html, pour que toute l\'équipe se connecte automatiquement.');
 };
 document.getElementById('fbTest').onclick=()=>{
   const st=document.getElementById('fbStatus');
@@ -2667,7 +2892,7 @@ if('serviceWorker' in navigator){
 
 /* ---- Verrou + configuration d'équipe ---- */
 let teamName="Planning";
-function startApp(){ Promise.all([loadHiddenFromFb(),loadCatIconsFromFb(),loadCatStyleFromFb()]).then(autoLoad).catch(autoLoad); }
+function startApp(){ Promise.all([loadHiddenFromFb(),loadCatIconsFromFb(),loadCatStyleFromFb(),loadEnabledViewsFromFb()]).then(autoLoad).catch(autoLoad); }
 function shakeLock(msg){
   const er=document.getElementById('lockErr');er.textContent=msg||'Code incorrect.';document.getElementById('lockInput').value='';
   const card=document.querySelector('#lock .lock-card');card.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:240});
@@ -2714,9 +2939,16 @@ document.getElementById('lockShow').onclick=()=>{const i=document.getElementById
 function fbGet(path){ return fbReady ? fbDB.ref(path).get().then(s=>s.exists()?s.val():null) : Promise.resolve(null); }
 function fbSet(path,val){ return fbReady ? fbDB.ref(path).set(val) : Promise.reject('Firebase non connecté'); }
 
+function isFirebaseUnconfigured(){
+  return !fbReady && !localStorage.getItem('fb_config') && _fbFileConfig===false;
+}
 function bootWithTeam(){
   teamName='Planning';
   if(!fbReady){
+    if(isFirebaseUnconfigured() && !lsGet('fb_setup_skipped')){
+      document.getElementById('fbOffer').classList.add('show');
+      return;
+    }
     // Mode sans Firebase : verrou local classique
     if(lsGet('unlocked')==='1'&&lsGet('unlocked_pw')){ startApp(); } else { showLockNow(); }
     return;
@@ -2734,7 +2966,121 @@ function showLockNow(){
   document.getElementById('lock').classList.add('show');
   setTimeout(()=>{if(window.matchMedia('(min-width:901px)').matches)document.getElementById('lockInput').focus();},80);
 }
-bootWithTeam();
+document.getElementById('fbOfferYes').onclick=()=>{
+  document.getElementById('fbOffer').classList.remove('show');
+  openFbWizard();
+};
+document.getElementById('fbOfferNo').onclick=()=>{
+  lsSet('fb_setup_skipped','1');
+  document.getElementById('fbOffer').classList.remove('show');
+  if(lsGet('unlocked')==='1'&&lsGet('unlocked_pw')){ startApp(); } else { showLockNow(); }
+};
+
+/* ===== Assistant de configuration Firebase, étape par étape ===== */
+let fbwizStep=0;
+const FBWIZ_LAST=6;
+let fbwizRecoveryMode=false;
+function openFbWizard(){
+  fbwizRecoveryMode=false;
+  fbwizStep=0;
+  renderFbWizStep();
+  document.getElementById('fbWizard').classList.add('show');
+}
+function openFbWizardAtStep5FromLock(){
+  fbwizRecoveryMode=true;
+  fbwizStep=5;
+  const cfg=getActiveFbConfig()||{};
+  const map={wzApiKey:'apiKey',wzAuthDomain:'authDomain',wzDbUrl:'databaseURL',wzProjectId:'projectId',wzStorage:'storageBucket',wzSender:'messagingSenderId',wzAppId:'appId'};
+  for(const id in map){const el=document.getElementById(id);if(el){const v=cfg[map[id]];el.value=(v&&v!=='A_REMPLACER')?v:'';}}
+  renderFbWizStep();
+  document.getElementById('fbWizard').classList.add('show');
+}
+document.getElementById('lockFbLink').onclick=()=>{
+  const code=prompt('Code administrateur, pour modifier la connexion Firebase :');
+  if(code===null)return;
+  if(!code){alert('Code incorrect.');return;}
+  const proceed=()=>{document.getElementById('lock').classList.remove('show');openFbWizardAtStep5FromLock();};
+  if(!fbReady){
+    // Firebase indisponible : seul le code par défaut peut être vérifié (aucune connexion possible pour vérifier un code personnalisé)
+    if(code===DEFAULT_ADMIN_PASSWORD)proceed();
+    else alert('Code incorrect. (Firebase étant injoignable, seul le code administrateur par défaut peut être vérifié ici.)');
+    return;
+  }
+  fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL, code).then(proceed).catch(()=>{
+    alert('Code incorrect.');
+  });
+};
+function renderFbWizStep(){
+  document.querySelectorAll('.fbwiz-step').forEach(el=>el.classList.toggle('show',+el.dataset.step===fbwizStep));
+  const dots=document.getElementById('fbwizDots');
+  dots.innerHTML='';
+  for(let i=0;i<=FBWIZ_LAST;i++){const d=document.createElement('span');d.className='dot'+(i===fbwizStep?' on':'');dots.appendChild(d);}
+  const prev=document.getElementById('fbwizPrev'),next=document.getElementById('fbwizNext'),cancel=document.getElementById('fbwizCancel');
+  prev.style.visibility=(fbwizStep===0||fbwizStep===FBWIZ_LAST)?'hidden':'visible';
+  if(fbwizStep===FBWIZ_LAST){next.style.display='none';cancel.style.display='none';}
+  else{next.style.display='';cancel.style.display='';next.textContent=fbwizStep===5?'Se connecter ›':'Suivant ›';cancel.textContent=fbwizRecoveryMode?'‹ Retour à l\'écran de verrouillage':'Annuler et utiliser en solo';}
+}
+document.getElementById('fbwizPrev').onclick=()=>{if(fbwizStep>0){fbwizStep--;renderFbWizStep();}};
+document.getElementById('fbwizNext').onclick=()=>{
+  if(fbwizStep===5){ connectFbWizard(); return; }
+  if(fbwizStep<FBWIZ_LAST){fbwizStep++;renderFbWizStep();}
+};
+document.getElementById('fbwizCancel').onclick=()=>{
+  if(fbwizRecoveryMode){
+    document.getElementById('fbWizard').classList.remove('show');
+    document.getElementById('lock').classList.add('show');
+    return;
+  }
+  if(!confirm('Utiliser l\'application seule, sans Firebase, pour l\'instant ?'))return;
+  lsSet('fb_setup_skipped','1');
+  document.getElementById('fbWizard').classList.remove('show');
+  if(lsGet('unlocked')==='1'&&lsGet('unlocked_pw')){ startApp(); } else { showLockNow(); }
+};
+function connectFbWizard(){
+  const cfg={
+    apiKey:document.getElementById('wzApiKey').value.trim(),
+    authDomain:document.getElementById('wzAuthDomain').value.trim(),
+    databaseURL:document.getElementById('wzDbUrl').value.trim(),
+    projectId:document.getElementById('wzProjectId').value.trim(),
+    storageBucket:document.getElementById('wzStorage').value.trim(),
+    messagingSenderId:document.getElementById('wzSender').value.trim(),
+    appId:document.getElementById('wzAppId').value.trim()
+  };
+  if(!cfg.apiKey||!cfg.databaseURL){alert('Au minimum « apiKey » et « databaseURL » sont nécessaires.');return;}
+  fbwizStep=6;renderFbWizStep();
+  const title=document.getElementById('wzResultTitle'),text=document.getElementById('wzResultText'),
+        dl=document.getElementById('wzDownload'),cont=document.getElementById('wzContinue'),retry=document.getElementById('wzRetry');
+  title.textContent='Connexion…';text.textContent='Vérification en cours…';dl.style.display='none';cont.style.display='none';retry.style.display='none';
+  lsSet('fb_config',JSON.stringify(cfg));
+  initFirebase();
+  if(!fbReady){
+    title.textContent='Échec de connexion';
+    text.textContent='Vérifiez les 7 valeurs saisies (copiez-les bien depuis Firebase).';
+    retry.style.display='';
+    return;
+  }
+  fbGet('config/teamName').then(()=>{
+    title.textContent='Connecté ✔';
+    text.innerHTML='Firebase est connecté sur <b>cet appareil</b>. Pour que toute l\'équipe en profite automatiquement, téléchargez le fichier ci-dessous et déposez-le à la racine de votre dépôt GitHub, à côté de <span class="mono">index.html</span> (il remplace <span class="mono">firebase-config.json</span> s\'il existe déjà).';
+    dl.style.display='flex';cont.style.display='';
+    lsDel('fb_setup_skipped');
+  }).catch(err=>{
+    title.textContent='Configuration incomplète';
+    text.textContent='La connexion technique fonctionne, mais la lecture a échoué : vérifiez que les règles ont bien été publiées (étape 3) et que l\'authentification est activée (étape 4).';
+    retry.style.display='';
+  });
+}
+document.getElementById('wzRetry').onclick=()=>{fbwizStep=5;renderFbWizStep();};
+document.getElementById('wzContinue').onclick=()=>{
+  document.getElementById('fbWizard').classList.remove('show');
+  bootWithTeam();
+};
+document.getElementById('wzDownload').onclick=()=>{
+  const cfg=getActiveFbConfig();
+  const blob=new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='firebase-config.json';document.body.appendChild(a);a.click();a.remove();
+};
+initFirebase().then(bootWithTeam);
 
 
 </script>
