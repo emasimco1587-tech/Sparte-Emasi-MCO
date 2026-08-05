@@ -1463,6 +1463,25 @@ html[data-theme="aero"] #rtt{background:rgba(4,16,26,.8)}
 .rtt-mgr-tbl tbody tr{cursor:pointer}
 /* alertes (toujours visibles) */
 .rtt-alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+/* nav management : tableau de bord / paramétrage */
+.rtt-mgr-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.rtt-mgr-nav button{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 10px;border-radius:13px;font-size:13.5px;font-weight:700;background:var(--glass);border:1px solid var(--line);color:var(--soft)}
+.rtt-mgr-nav button svg{width:17px;height:17px;flex:0 0 auto}
+.rtt-mgr-nav button.on{background:linear-gradient(145deg,var(--blue),var(--blue-d));border-color:rgba(120,170,255,.4);color:#fff;box-shadow:0 0 16px -6px var(--blue-glow)}
+/* alertes compactes (résumé + détail repliable) */
+.rtt-alerts-sum{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rtt-sum-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:11px;font-size:12.5px;font-weight:700;border:1px solid var(--line-2)}
+.rtt-sum-chip .dot{width:9px;height:9px;border-radius:50%}
+.rtt-sum-chip.over{background:rgba(255,69,58,.12);border-color:rgba(255,69,58,.4);color:#ff8078}.rtt-sum-chip.over .dot{background:#ff453a}
+.rtt-sum-chip.miss{background:rgba(255,159,10,.12);border-color:rgba(255,159,10,.4);color:#ffb84d}.rtt-sum-chip.miss .dot{background:#ff9f0a}
+.rtt-sum-chip.ok{background:rgba(48,209,88,.12);border-color:rgba(48,209,88,.35);color:#5fd97e}.rtt-sum-chip.ok .dot{background:#30d158}
+.rtt-sum-toggle{margin-left:auto;font-size:12px;font-weight:700;color:var(--blue-2);cursor:pointer;background:none;border:none;padding:6px}
+.rtt-alerts-list{margin-top:10px;max-height:210px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;-webkit-overflow-scrolling:touch}
+.rtt-alerts-list.hidden{display:none}
+.rtt-alerts-list .rtt-alert{padding:9px 11px;font-size:12px}
+/* note Sparte (espace agent) */
+.rtt-sparte-note{display:flex;gap:10px;align-items:flex-start;background:rgba(120,170,255,.1);border:1px solid rgba(120,170,255,.35);border-radius:13px;padding:12px 14px;font-size:12.5px;line-height:1.5;color:var(--ink);margin-top:14px}
+.rtt-sparte-note svg{flex:0 0 auto;width:18px;height:18px;color:var(--blue-2);margin-top:1px}
 .rtt-alert{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:13px;font-size:12.5px;line-height:1.4;border:1px solid var(--line)}
 .rtt-alert .ic{flex:0 0 auto;margin-top:1px}
 .rtt-alert .ic svg{width:17px;height:17px;display:block}
@@ -1553,10 +1572,13 @@ html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
         <div id="rttDashCet"></div>
         <div class="rtt-grid" id="rttDashGrid"></div>
         <div class="rtt-legend">
-          <span><i class="rtt"></i> RTT posé (manuel)</span>
-          <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--soft)" stroke-width="2.4" style="vertical-align:-2px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> RTT du planning (verrouillé)</span>
+          <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--soft)" stroke-width="2.4" style="vertical-align:-2px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> RTT du planning (JRTT)</span>
         </div>
-        <p class="rtt-hint">Les jours <b>JRTT</b> du planning apparaissent automatiquement (verrouillés) et comptent dans votre quota. Touchez un autre jour ouvré pour ajouter/retirer un RTT. Le CET se règle par le compteur ci-dessus, sans choisir de date.</p>
+        <div class="rtt-sparte-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <div>Vous ne pouvez pas poser de RTT ici. Pour poser un RTT, <b>demandez à votre tête d'équipe de le placer sur Sparte</b> — il apparaîtra alors automatiquement dans votre calendrier.</div>
+        </div>
+        <p class="rtt-hint">Ce calendrier affiche vos RTT (JRTT) issus du planning. Le CET se règle avec le compteur ci-dessus, sans choisir de date.</p>
         <button class="btn btn-ink" id="rttChangePw" style="width:100%;justify-content:center;padding:12px;margin-top:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Modifier mon mot de passe</button>
       </div>
 
@@ -1580,37 +1602,42 @@ html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
 
       <!-- Synthèse management -->
       <div class="rtt-panel" data-rttpanel="mgr">
-        <div id="rttAlerts" class="rtt-alerts"></div>
-        <div class="rtt-seg">
-          <button id="rttMgrPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <span class="lbl"><b id="rttMgrCycle">Cycle</b><span id="rttMgrDates">—</span></span>
-          <button id="rttMgrNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+        <div class="rtt-mgr-nav" id="rttMgrNav">
+          <button data-sec="dash" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Tableau de bord</button>
+          <button data-sec="cfg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Paramétrage</button>
         </div>
-        <div class="rtt-mgr-toggle" id="rttMgrToggle">
-          <button data-mode="graph" class="on">Graphique</button>
-          <button data-mode="table">Tableau</button>
+
+        <div id="rttSecDash">
+          <div id="rttAlerts" class="rtt-alerts"></div>
+          <div class="rtt-seg">
+            <button id="rttMgrPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span class="lbl"><b id="rttMgrCycle">Cycle</b><span id="rttMgrDates">—</span></span>
+            <button id="rttMgrNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+          <div class="rtt-mgr-toggle" id="rttMgrToggle">
+            <button data-mode="graph" class="on">Graphique</button>
+            <button data-mode="table">Tableau</button>
+          </div>
+          <div id="rttMgrGraph" class="rtt-gchart"></div>
+          <div id="rttMgrTblWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:none">
+            <table class="rtt-mgr-tbl" id="rttMgrTbl"></table>
+          </div>
         </div>
-        <div id="rttMgrGraph" class="rtt-gchart"></div>
-        <div id="rttMgrTblWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:none">
-          <table class="rtt-mgr-tbl" id="rttMgrTbl"></table>
-        </div>
-        <details class="set-card" style="margin-top:16px">
-          <summary style="cursor:pointer;font-family:'Fraunces';font-size:15px;display:flex;align-items:center;gap:9px">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue-2)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            Paramètres (management)
-          </summary>
-          <div style="margin-top:14px">
+
+        <div id="rttSecCfg" style="display:none">
+          <div class="set-card">
             <label class="ts-label">Date de début du 1<sup>er</sup> cycle de référence (un lundi de préférence)</label>
             <input id="rttCfgStart" class="ts-input" type="date">
             <label class="ts-label">Plafond CET par an et par agent</label>
             <input id="rttCfgCet" class="ts-input" type="number" min="0" max="60" value="15">
             <button class="btn btn-blue" id="rttCfgSave" style="margin-top:10px;width:100%;justify-content:center;padding:12px">Enregistrer la configuration</button>
             <p class="notif-note" id="rttCfgState" style="margin-top:8px"></p>
-            <div style="height:6px"></div>
-            <label class="ts-label" style="margin-top:14px">Quota par cycle & mot de passe de chaque agent</label>
+          </div>
+          <div class="set-card" style="margin-top:12px">
+            <label class="ts-label" style="margin-top:0">Régime (8 / 5 / forfait) & mot de passe de chaque agent</label>
             <div id="rttCfgAgents"></div>
           </div>
-        </details>
+        </div>
       </div>
 
     </div>
@@ -1728,7 +1755,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v53";
+const APP_VERSION="v54";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -3661,7 +3688,7 @@ const RTT = (function(){
         cell.innerHTML=(locked?'<span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>':'')+
           (type?'<span class="tag">'+(type==='rtt'?'RTT':'CET')+'</span>':'')+
           '<span class="dd">'+day.getDate()+'</span><span class="mm">'+MONTHS_SHORT[day.getMonth()]+'</span>';
-        cell.onclick=locked?(()=>toast('Jour issu du planning (JRTT) — non modifiable ici.')):(()=>toggleDay(k));
+        cell.onclick=locked?(()=>toast('Jour issu du planning (JRTT).')):(()=>toast('Vous ne pouvez pas poser de RTT ici — demandez à votre tête d\u2019équipe de le placer sur Sparte.'));
         row.appendChild(cell);
       }
       box.appendChild(row);
@@ -3720,14 +3747,23 @@ const RTT = (function(){
     fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL,code).then(()=>{ try{adminUnlocked=true;currentAdminPassword=code;}catch(e){} enterMgr(); })
       .catch(()=>alert('Code incorrect.'));
   }
-  async function enterMgr(){
+  async function enterMgr(sec){
     panel('mgr');
+    S.mgrSec=sec||'dash';
+    applyMgrSec();
     S.cfg=await Store.getConfig();
     S.mgrIdx=cycleIndexOf(S.cfg,new Date());
     fillCfgForm();
     await renderAlerts();
     await renderMgr();
     renderCfgAgents();
+  }
+  function applyMgrSec(){
+    const cfg=S.mgrSec==='cfg';
+    const d=document.getElementById('rttSecDash'), c=document.getElementById('rttSecCfg');
+    if(d)d.style.display=cfg?'none':'block';
+    if(c)c.style.display=cfg?'block':'none';
+    document.querySelectorAll('#rttMgrNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===S.mgrSec));
   }
   // Icônes d'alerte
   const ALERT_IC={
@@ -3754,14 +3790,21 @@ const RTT = (function(){
         else if(posed<q) miss.push({n,w,d:q-posed,posed,q});
       });
     });
-    let html='<div class="rtt-alert-head">Alertes RTT — cycle en cours & à venir</div>';
+    let html='<div class="rtt-alerts-sum">';
     if(!overs.length&&!miss.length){
-      html+=alertLine('ok','Aucune anomalie : quotas respectés sur le cycle en cours et le suivant.');
-    }else{
-      overs.forEach(o=>{ html+=alertLine('over','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : <b>'+o.d+' RTT en trop</b> ('+o.posed+'/'+o.q+').'); });
-      miss.forEach(o=>{ html+=alertLine('miss','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : il manque <b>'+o.d+' RTT</b> ('+o.posed+'/'+o.q+').'); });
+      box.innerHTML='<div class="rtt-alerts-sum"><span class="rtt-sum-chip ok"><span class="dot"></span>Aucune anomalie — cycle en cours &amp; à venir</span></div>';
+      return;
     }
-    box.innerHTML=html;
+    if(overs.length)html+='<span class="rtt-sum-chip over"><span class="dot"></span>'+overs.length+' dépassement'+(overs.length>1?'s':'')+'</span>';
+    if(miss.length)html+='<span class="rtt-sum-chip miss"><span class="dot"></span>'+miss.length+' RTT manquant'+(miss.length>1?'s':'')+'</span>';
+    html+='<button class="rtt-sum-toggle" id="rttAlertToggle">Voir le détail</button></div>';
+    let list='<div class="rtt-alerts-list hidden" id="rttAlertList">';
+    overs.forEach(o=>{ list+=alertLine('over','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : <b>'+o.d+' en trop</b> ('+o.posed+'/'+o.q+').'); });
+    miss.forEach(o=>{ list+=alertLine('miss','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : il manque <b>'+o.d+'</b> ('+o.posed+'/'+o.q+').'); });
+    list+='</div>';
+    box.innerHTML=html+list;
+    const tg=document.getElementById('rttAlertToggle'), ls=document.getElementById('rttAlertList');
+    tg.onclick=()=>{ const hidden=ls.classList.toggle('hidden'); tg.textContent=hidden?'Voir le détail':'Masquer le détail'; };
   }
   // Alerte personnelle (espace agent)
   function personalAlertHtml(cfg,combined,quota){
@@ -3943,6 +3986,7 @@ const RTT = (function(){
     const _rt=document.getElementById('rttTop');if(_rt)_rt.onclick=open; // bouton d'en-tête (desktop)
     const _ar=document.getElementById('adminRttBtn');if(_ar)_ar.onclick=openManagement; // depuis l'espace administrateur
     document.querySelectorAll('#rttMgrToggle button').forEach(bt=>bt.onclick=()=>{S.mgrMode=bt.dataset.mode;applyMgrMode();});
+    document.querySelectorAll('#rttMgrNav button').forEach(bt=>bt.onclick=()=>{S.mgrSec=bt.dataset.sec;applyMgrSec();});
     document.getElementById('rttQuit').onclick=()=>{close();if(typeof goPlanning==='function')goPlanning();};
     document.getElementById('rttBack').onclick=back;
     document.getElementById('rttGoAgent').onclick=openAgentLogin;
@@ -3965,9 +4009,9 @@ const RTT = (function(){
   function openManagement(){
     const ad=document.getElementById('admin'); if(ad)ad.classList.remove('show');
     show();
-    Promise.resolve(enterMgr()).then(()=>{
-      const det=document.querySelector('#rtt .rtt-panel[data-rttpanel="mgr"] details');
-      if(det){ det.open=true; setTimeout(()=>{try{det.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},140); }
+    Promise.resolve(enterMgr('cfg')).then(()=>{
+      const sec=document.getElementById('rttSecCfg');
+      if(sec){ setTimeout(()=>{try{sec.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},140); }
     });
   }
 
