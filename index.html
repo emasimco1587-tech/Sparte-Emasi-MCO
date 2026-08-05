@@ -992,6 +992,8 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
     <div class="stats" id="stats"></div>
     <button class="btn btn-blue" id="searchTop" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Rechercher</button>
+    <button class="btn btn-ghost" id="rttTop" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 16l2 2 4-4"/></svg>RTT</button>
     <button class="btn btn-ghost" id="settingsTop" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Réglages</button>
   </div>
@@ -1151,6 +1153,9 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
       <div class="set-card">
         <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Connexion Firebase</h3>
         <p>État : <b id="fbStatus">—</b></p>
+        <div id="fbOverrideBanner" class="dispo-experimental" style="display:none;margin-bottom:14px">
+          <span>⚠️ <b>Configuration locale active sur cet appareil</b> — elle prévaut sur le fichier <span class="mono">firebase-config.json</span> partagé, même si ce fichier a été mis à jour sur GitHub. <button id="fbClearOverrideInline" class="btn btn-ink" style="margin-top:8px;padding:8px 12px;font-size:12px">Revenir au fichier partagé</button></span>
+        </div>
         <details class="fb-help">
           <summary>📖 Procédure complète pas à pas (à lire si vous débutez)</summary>
           <div class="fb-proc">
@@ -1306,10 +1311,313 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
         <button class="btn btn-ink" id="cfgExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Exporter la configuration</button>
         <button class="btn btn-ink" id="cfgImport" style="margin-top:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 21h14"/></svg>Importer une configuration</button>
       </div>
+      <div class="set-card">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 16l2 2 4-4"/></svg>Gestion des RTT</h3>
+        <p>Définir la date du 1<sup>er</sup> cycle, le quota par cycle (5 ou 8) et le <b>mot de passe de chaque agent</b>, puis consulter la synthèse de l'équipe.</p>
+        <button class="btn btn-blue" id="adminRttBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Ouvrir la gestion des RTT (quotas & mots de passe)</button>
+      </div>
       <button class="btn btn-blue" id="adminClose" style="justify-content:center;padding:13px">Retour au planning</button>
     </div>
   </div>
 </div>
+<!-- ===== Module RTT : CSS (réutilise les variables du thème « Pupitre ») ===== -->
+<style id="rttStyle">
+#rtt{position:fixed;inset:0;z-index:53;display:none;flex-direction:column;background:rgba(0,3,8,.86);backdrop-filter:blur(22px)}
+#rtt.show{display:flex;animation:fade .22s ease}
+html[data-theme="light"] #rtt{background:rgba(238,242,248,.85)}
+html[data-theme="aero"] #rtt{background:rgba(4,16,26,.8)}
+.rtt-panel{display:none;flex-direction:column;flex:1;min-height:0}
+.rtt-panel.on{display:flex}
+.rtt-choice{display:flex;flex-direction:column;gap:14px;padding:8px 0}
+.rtt-big{display:flex;align-items:center;gap:16px;text-align:left;padding:20px;border-radius:18px;
+  background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(16px);box-shadow:var(--sh);transition:.14s;width:100%}
+.rtt-big:active{transform:scale(.98)}
+.rtt-big .ic{width:52px;height:52px;flex:0 0 52px;border-radius:15px;display:grid;place-items:center;
+  background:linear-gradient(145deg,var(--blue),var(--blue-d));box-shadow:0 0 18px -6px var(--blue-glow)}
+.rtt-big.mgr .ic{background:linear-gradient(145deg,var(--cyan),#0891b2);box-shadow:0 0 18px -6px rgba(34,211,238,.5)}
+.rtt-big .ic svg{width:26px;height:26px;color:#fff;stroke-width:2}
+.rtt-big .t{font-family:'Fraunces';font-size:18px}
+.rtt-big .d{font-size:13px;color:var(--soft);margin-top:3px;line-height:1.45}
+.rtt-seg{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 14px;
+  background:var(--glass-2);border:1px solid var(--line);border-radius:14px;padding:7px 8px}
+.rtt-seg button{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--ink);
+  background:var(--glass);border:1px solid var(--line-2)}
+.rtt-seg button:active{transform:scale(.92)}
+.rtt-seg .lbl{text-align:center;flex:1;line-height:1.2}
+.rtt-seg .lbl b{font-family:'Fraunces';font-size:15px;display:block}
+.rtt-seg .lbl span{font-size:11.5px;color:var(--soft)}
+.rtt-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:16px}
+@media(max-width:560px){.rtt-stats{grid-template-columns:repeat(2,1fr)}}
+.rtt-stat{border-radius:15px;padding:13px 12px;background:var(--glass);border:1px solid var(--line);text-align:center}
+.rtt-stat .n{font-family:'Fraunces';font-size:26px;line-height:1}
+.rtt-stat .k{font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--soft);margin-top:6px;text-transform:uppercase}
+.rtt-stat.hl .n{color:var(--blue-2)}
+.rtt-stat.cet .n{color:var(--cyan)}
+.rtt-stat.warn .n{color:#ff9f0a}
+.rtt-grid{display:flex;flex-direction:column;gap:7px}
+.rtt-wk{display:grid;grid-template-columns:52px repeat(5,1fr);gap:6px;align-items:stretch}
+.rtt-wk .wkn{display:flex;flex-direction:column;justify-content:center;align-items:center;border-radius:11px;
+  background:var(--glass-2);border:1px solid var(--line);font-size:10px;color:var(--soft);font-weight:700;padding:4px 2px}
+.rtt-wk .wkn b{font-family:'Fraunces';font-size:13px;color:var(--ink)}
+.rtt-cell{position:relative;min-height:46px;border-radius:11px;border:1px solid var(--line);background:var(--glass);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;transition:.12s;overflow:hidden}
+.rtt-cell:active{transform:scale(.94)}
+.rtt-cell .dd{font-size:14px;font-weight:700}
+.rtt-cell .mm{font-size:9px;color:var(--faint)}
+.rtt-cell.rtt{background:linear-gradient(145deg,var(--blue),var(--blue-d));border-color:rgba(120,170,255,.4);color:#fff}
+.rtt-cell.rtt .mm{color:rgba(255,255,255,.75)}
+.rtt-cell.cet{background:linear-gradient(145deg,var(--cyan),#0891b2);border-color:rgba(120,230,255,.4);color:#04222b}
+.rtt-cell.cet .mm{color:rgba(4,34,43,.7)}
+.rtt-cell .tag{position:absolute;top:3px;right:4px;font-size:8.5px;font-weight:800;letter-spacing:.03em}
+.rtt-cell.past{opacity:.5}
+.rtt-cell.disabled{opacity:.28;cursor:default;background:transparent;border-style:dashed}
+.rtt-cell.today-c{box-shadow:0 0 0 2px var(--blue) inset}
+.rtt-cell.locked{cursor:default}
+.rtt-cell.locked::before{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.45);border-radius:11px;pointer-events:none}
+.rtt-cell .lk{position:absolute;top:3px;left:4px;opacity:.92;line-height:0}
+.rtt-cell .lk svg{width:11px;height:11px}
+.rtt-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--soft)}
+.rtt-legend span{display:flex;align-items:center;gap:6px}
+.rtt-legend i{width:14px;height:14px;border-radius:5px;display:inline-block}
+.rtt-legend i.rtt{background:linear-gradient(145deg,var(--blue),var(--blue-d))}
+.rtt-legend i.cet{background:linear-gradient(145deg,var(--cyan),#0891b2)}
+.rtt-hint{font-size:12px;color:var(--faint);text-align:center;margin-top:12px;line-height:1.5}
+.rtt-mgr-tbl{width:100%;border-collapse:separate;border-spacing:0 7px;font-size:13px}
+.rtt-mgr-tbl th{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--soft);font-weight:700;padding:0 8px 2px;text-align:center}
+.rtt-mgr-tbl th:first-child{text-align:left}
+.rtt-mgr-tbl td{background:var(--glass);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:11px 8px;text-align:center;vertical-align:middle}
+.rtt-mgr-tbl td:first-child{border-left:1px solid var(--line);border-radius:12px 0 0 12px;text-align:left;font-weight:600}
+.rtt-mgr-tbl td:last-child{border-right:1px solid var(--line);border-radius:0 12px 12px 0}
+.rtt-mgr-tbl .big{font-family:'Fraunces';font-size:17px}
+.rtt-mgr-tbl .rest-ok{color:var(--blue-2)}
+.rtt-mgr-tbl .rest-full{color:#30d158}
+.rtt-mgr-tbl .rest-over{color:#ff453a}
+.rtt-mgr-tbl .cetv{color:var(--cyan);font-weight:700}
+.rtt-av{display:inline-flex;align-items:center;gap:8px}
+.rtt-av .av{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--glass-2);border:1px solid var(--line-2);flex:0 0 28px}
+.rtt-cfg-agent{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.rtt-cfg-agent .nm{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtt-quota-seg{display:inline-flex;border-radius:10px;overflow:hidden;border:1px solid var(--line-2)}
+.rtt-quota-seg button{padding:7px 12px;font-size:12.5px;font-weight:700;background:var(--glass-2);color:var(--soft)}
+.rtt-quota-seg button.on{background:var(--blue);color:#fff}
+.rtt-pw-btn{padding:7px 10px;font-size:11.5px;border-radius:10px;background:var(--glass-2);border:1px solid var(--line-2);color:var(--ink);white-space:nowrap}
+.rtt-pw-btn.set{color:#30d158;border-color:rgba(48,209,88,.4)}
+.rtt-login-list{max-height:44vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin:4px 0 2px;-webkit-overflow-scrolling:touch}
+.rtt-login-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:13px;background:var(--glass);border:1px solid var(--line);text-align:left;transition:.12s}
+.rtt-login-item.on{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
+.rtt-login-item:active{transform:scale(.98)}
+.rtt-login-item .av{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:800;background:var(--glass-2);border:1px solid var(--line-2);flex:0 0 34px}
+.rtt-login-item .nm{font-size:14.5px;font-weight:600}
+.rtt-err{color:#ff453a;font-size:12.5px;text-align:center;min-height:16px;margin-top:8px}
+.rtt-empty{padding:34px 20px;text-align:center;color:var(--soft);font-size:13.5px;line-height:1.6}
+/* jauges graphiques (espace agent) */
+.rtt-gauge{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.rtt-gg{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rtt-gg .gh{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--soft);margin-bottom:8px}
+.rtt-gg .gh b{font-family:'Fraunces';font-size:14px;color:var(--ink)}
+.rtt-gg .gh .gv{font-family:'Fraunces';font-size:14px}
+.rtt-track{height:12px;border-radius:8px;background:var(--glass-2);overflow:hidden;position:relative;border:1px solid var(--line)}
+.rtt-fill{height:100%;border-radius:8px;transition:width .35s ease;min-width:2px}
+.rtt-fill.rtt{background:linear-gradient(90deg,var(--blue-d),var(--blue-2))}
+.rtt-fill.cet{background:linear-gradient(90deg,#0891b2,var(--cyan))}
+.rtt-fill.over{background:linear-gradient(90deg,#ff453a,#ff9f0a)}
+/* graphique management par agent */
+.rtt-mgr-toggle{display:inline-flex;border-radius:11px;overflow:hidden;border:1px solid var(--line-2);margin-bottom:14px}
+.rtt-mgr-toggle button{padding:8px 16px;font-size:12.5px;font-weight:700;background:var(--glass-2);color:var(--soft)}
+.rtt-mgr-toggle button.on{background:var(--blue);color:#fff}
+.rtt-gchart{display:flex;flex-direction:column;gap:11px}
+.rtt-grow{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rtt-grow .gr-h{display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.rtt-grow .gr-h .av{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:10.5px;font-weight:800;background:var(--glass-2);border:1px solid var(--line-2);flex:0 0 26px}
+.rtt-grow .gr-h .nm{font-size:13.5px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtt-grow .gr-h .qn{font-size:11px;color:var(--soft);white-space:nowrap}
+.rtt-bar-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--soft);margin:7px 0 4px}
+/* compteur CET (nombre) */
+.rtt-cetbox{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:16px}
+.rtt-cetbox .cl b{font-family:'Fraunces';font-size:14px;display:block}
+.rtt-cetbox .cl span{font-size:11.5px;color:var(--soft);display:block;margin-top:2px}
+.rtt-stepper{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto}
+.rtt-stepper button{width:38px;height:38px;border-radius:11px;font-size:22px;font-weight:600;line-height:1;display:grid;place-items:center;background:linear-gradient(145deg,var(--cyan),#0891b2);color:#04222b;border:1px solid rgba(120,230,255,.4)}
+.rtt-stepper button:active{transform:scale(.9)}
+.rtt-stepper .v{min-width:44px;text-align:center;font-family:'Fraunces';font-size:24px;color:var(--cyan)}
+/* détail agent */
+.rtt-detail-hd{background:var(--glass);border:1px solid var(--line);border-radius:15px;padding:14px 16px;margin-bottom:14px}
+.rtt-detail-hd .nm{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.rtt-detail-hd .nm .av{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:14px;font-weight:800;background:var(--glass-2);border:1px solid var(--line-2)}
+.rtt-detail-hd .nm b{font-family:'Fraunces';font-size:19px}
+.rtt-detail-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.rtt-detail-kpis .k{background:var(--glass-2);border:1px solid var(--line);border-radius:11px;padding:9px;text-align:center}
+.rtt-detail-kpis .k .n{font-family:'Fraunces';font-size:20px}
+.rtt-detail-kpis .k .l{font-size:10px;text-transform:uppercase;letter-spacing:.02em;color:var(--soft);margin-top:4px}
+.rtt-cyc{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.rtt-cyc .ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+.rtt-cyc .ch b{font-family:'Fraunces';font-size:15px}
+.rtt-cyc .ch .rg{font-size:11.5px;color:var(--soft)}
+.rtt-cyc .ct{font-size:11.5px;font-weight:700}
+.rtt-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rtt-chip{font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:9px;background:var(--glass-2);border:1px solid var(--line-2);display:inline-flex;align-items:center;gap:5px}
+.rtt-chip.plan{border-color:rgba(120,170,255,.4);color:var(--blue-2)}
+.rtt-chip.plan svg{width:11px;height:11px}
+.rtt-grow{cursor:pointer}
+.rtt-grow .chev{margin-left:auto;color:var(--faint);flex:0 0 auto}
+.rtt-mgr-tbl tbody tr{cursor:pointer}
+/* alertes (toujours visibles) */
+.rtt-alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.rtt-alert{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border-radius:13px;font-size:12.5px;line-height:1.4;border:1px solid var(--line)}
+.rtt-alert .ic{flex:0 0 auto;margin-top:1px}
+.rtt-alert .ic svg{width:17px;height:17px;display:block}
+.rtt-alert b{font-weight:700}
+.rtt-alert.over{background:rgba(255,69,58,.12);border-color:rgba(255,69,58,.4);color:#ffb3ad}
+.rtt-alert.over .ic{color:#ff6b61}
+.rtt-alert.miss{background:rgba(255,159,10,.12);border-color:rgba(255,159,10,.4);color:#ffd8a0}
+.rtt-alert.miss .ic{color:#ff9f0a}
+.rtt-alert.ok{background:rgba(48,209,88,.12);border-color:rgba(48,209,88,.35);color:#a5e8b8}
+.rtt-alert.ok .ic{color:#30d158}
+.rtt-alert .ag{font-weight:700;color:var(--ink)}
+.rtt-alert-head{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--soft);margin:2px 0 -2px}
+html[data-theme="light"] .rtt-alert.over{color:#a11}
+html[data-theme="light"] .rtt-alert.miss{color:#8a5a00}
+html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
+.rtt-quota-seg button{padding:7px 10px}
+/* voyant RTT dans la vue Ma journée */
+.today-hero{position:relative}
+.rtt-voyant{position:absolute;top:12px;right:12px;display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.02em;border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink);cursor:pointer;z-index:3;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.rtt-voyant:active{transform:scale(.95)}
+.rtt-voyant .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:var(--faint)}
+.rtt-voyant[data-state="ok"] .dot{background:#30d158;box-shadow:0 0 8px #30d158}
+.rtt-voyant[data-state="miss"]{border-color:rgba(255,159,10,.55)}
+.rtt-voyant[data-state="miss"] .dot{background:#ff9f0a;box-shadow:0 0 8px #ff9f0a;animation:rttPulse 1.6s infinite}
+.rtt-voyant[data-state="over"]{border-color:rgba(255,69,58,.55)}
+.rtt-voyant[data-state="over"] .dot{background:#ff453a;box-shadow:0 0 9px #ff453a;animation:rttPulse 1.1s infinite}
+@keyframes rttPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.rtt-vback{position:fixed;inset:0;z-index:60;background:transparent}
+.rtt-vpop{position:fixed;z-index:61;max-width:min(340px,92vw);background:var(--glass);border:1px solid var(--line-2);border-radius:16px;box-shadow:var(--sh);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:14px 15px;font-size:13px;animation:fade .16s ease}
+.rtt-vpop h4{font-family:'Fraunces';font-size:15px;margin:0 0 8px}
+.rtt-vpop .cyc{border-top:1px solid var(--line);padding:9px 0 4px}
+.rtt-vpop .cyc:first-of-type{border-top:0}
+.rtt-vpop .cyc .t{display:flex;justify-content:space-between;font-weight:700;margin-bottom:2px}
+.rtt-vpop .cyc .rgs{font-size:11px;color:var(--soft)}
+.rtt-vpop .cmt{font-size:12.5px;font-weight:600;margin-top:4px}
+.rtt-vpop .cmt.over{color:#ff6b61}.rtt-vpop .cmt.miss{color:#ff9f0a}.rtt-vpop .cmt.ok{color:#30d158}
+.rtt-vpop .note{font-size:11px;color:var(--faint);margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+@media(max-width:900px){#rttTop{display:none!important}}
+</style>
+
+<!-- ===== Module RTT : écran ===== -->
+<div id="rtt">
+  <div class="sheet">
+    <div class="sheet-bar">
+      <button class="sheet-back" id="rttBack" style="visibility:hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Retour</button>
+      <button class="sheet-close" id="rttQuit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="sheet-head"><h2 id="rttTitle">RTT</h2><p id="rttSub">Poser vos RTT et suivre votre Compte Épargne Temps.</p></div>
+    <div class="set-list" style="gap:0">
+
+      <!-- Choix agent / management -->
+      <div class="rtt-panel on" data-rttpanel="gate">
+        <div class="rtt-choice">
+          <button class="rtt-big" id="rttGoAgent">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <span><span class="t">Espace agent</span><span class="d">Poser un RTT, alimenter mon CET et voir mon solde. Vue strictement personnelle.</span></span>
+          </button>
+          <button class="rtt-big mgr" id="rttGoMgr">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span><span class="t">Espace management</span><span class="d">Vue de synthèse de toute l'équipe et paramétrage (quotas, mots de passe). Accès protégé.</span></span>
+          </button>
+        </div>
+        <p class="rtt-hint" id="rttFbHint"></p>
+      </div>
+
+      <!-- Connexion agent -->
+      <div class="rtt-panel" data-rttpanel="login">
+        <input id="rttLoginSearch" class="ts-input" type="text" placeholder="🔍 Rechercher mon nom…" autocomplete="off">
+        <div class="rtt-login-list" id="rttLoginList"></div>
+        <div id="rttLoginPwWrap" style="display:none;margin-top:10px">
+          <label class="ts-label">Mon mot de passe (défini par le management)</label>
+          <input id="rttLoginPw" class="ts-input" type="password" placeholder="Mot de passe" autocomplete="off" inputmode="text">
+          <button class="btn btn-blue" id="rttLoginBtn" style="margin-top:10px;width:100%;justify-content:center;padding:13px">Se connecter</button>
+          <p class="rtt-err" id="rttLoginErr"></p>
+        </div>
+      </div>
+
+      <!-- Tableau de bord agent -->
+      <div class="rtt-panel" data-rttpanel="dash">
+        <div class="rtt-seg">
+          <button id="rttDashPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <span class="lbl"><b id="rttDashCycle">Cycle</b><span id="rttDashDates">—</span></span>
+          <button id="rttDashNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div id="rttDashAlert"></div>
+        <div class="rtt-stats" id="rttDashStats"></div>
+        <div class="rtt-gauge" id="rttDashGauge"></div>
+        <div id="rttDashCet"></div>
+        <div class="rtt-grid" id="rttDashGrid"></div>
+        <div class="rtt-legend">
+          <span><i class="rtt"></i> RTT posé (manuel)</span>
+          <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--soft)" stroke-width="2.4" style="vertical-align:-2px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> RTT du planning (verrouillé)</span>
+        </div>
+        <p class="rtt-hint">Les jours <b>JRTT</b> du planning apparaissent automatiquement (verrouillés) et comptent dans votre quota. Touchez un autre jour ouvré pour ajouter/retirer un RTT. Le CET se règle par le compteur ci-dessus, sans choisir de date.</p>
+        <button class="btn btn-ink" id="rttChangePw" style="width:100%;justify-content:center;padding:12px;margin-top:6px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Modifier mon mot de passe</button>
+      </div>
+
+      <!-- Modifier mon mot de passe (agent) -->
+      <div class="rtt-panel" data-rttpanel="pw">
+        <label class="ts-label">Mot de passe actuel</label>
+        <input id="rttPwCur" class="ts-input" type="password" autocomplete="off" placeholder="Mot de passe actuel">
+        <label class="ts-label">Nouveau mot de passe (min. 4 caractères)</label>
+        <input id="rttPwNew" class="ts-input" type="password" autocomplete="off" placeholder="Nouveau mot de passe">
+        <label class="ts-label">Confirmer le nouveau mot de passe</label>
+        <input id="rttPwNew2" class="ts-input" type="password" autocomplete="off" placeholder="Confirmer">
+        <button class="btn btn-blue" id="rttPwSave" style="width:100%;justify-content:center;padding:13px;margin-top:12px">Enregistrer</button>
+        <p class="rtt-err" id="rttPwErr"></p>
+      </div>
+
+      <!-- Détail d'un agent (management) -->
+      <div class="rtt-panel" data-rttpanel="agentdetail">
+        <div id="rttDetailHead"></div>
+        <div id="rttDetailBody"></div>
+      </div>
+
+      <!-- Synthèse management -->
+      <div class="rtt-panel" data-rttpanel="mgr">
+        <div id="rttAlerts" class="rtt-alerts"></div>
+        <div class="rtt-seg">
+          <button id="rttMgrPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <span class="lbl"><b id="rttMgrCycle">Cycle</b><span id="rttMgrDates">—</span></span>
+          <button id="rttMgrNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="rtt-mgr-toggle" id="rttMgrToggle">
+          <button data-mode="graph" class="on">Graphique</button>
+          <button data-mode="table">Tableau</button>
+        </div>
+        <div id="rttMgrGraph" class="rtt-gchart"></div>
+        <div id="rttMgrTblWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;display:none">
+          <table class="rtt-mgr-tbl" id="rttMgrTbl"></table>
+        </div>
+        <details class="set-card" style="margin-top:16px">
+          <summary style="cursor:pointer;font-family:'Fraunces';font-size:15px;display:flex;align-items:center;gap:9px">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue-2)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Paramètres (management)
+          </summary>
+          <div style="margin-top:14px">
+            <label class="ts-label">Date de début du 1<sup>er</sup> cycle de référence (un lundi de préférence)</label>
+            <input id="rttCfgStart" class="ts-input" type="date">
+            <label class="ts-label">Plafond CET par an et par agent</label>
+            <input id="rttCfgCet" class="ts-input" type="number" min="0" max="60" value="15">
+            <button class="btn btn-blue" id="rttCfgSave" style="margin-top:10px;width:100%;justify-content:center;padding:12px">Enregistrer la configuration</button>
+            <p class="notif-note" id="rttCfgState" style="margin-top:8px"></p>
+            <div style="height:6px"></div>
+            <label class="ts-label" style="margin-top:14px">Quota par cycle & mot de passe de chaque agent</label>
+            <div id="rttCfgAgents"></div>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
 <input type="file" id="cfgFile" accept=".json" hidden>
 
 <button id="fabToday" title="Aujourd'hui">
@@ -1334,6 +1642,7 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
     <button class="tab" data-tab="vue"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>Vue</button>
     <button class="tab" data-tab="people"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></span>Personnes</button>
     <button class="tab" data-tab="search"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg></span>Recherche</button>
+    <button class="tab" data-tab="rtt"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 16l2 2 4-4"/></svg></span>RTT</button>
     <button class="tab" data-tab="settings"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Réglages</button>
   </div>
 </nav>
@@ -1419,7 +1728,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v44";
+const APP_VERSION="v53";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -1689,6 +1998,7 @@ function renderToday(){
   html+='</div>';
   c.innerHTML=html;
   c.querySelectorAll('.today-card').forEach(el=>el.onclick=()=>openAction(+el.dataset.id));
+  if(window.RTT&&RTT.attachDayVoyant)RTT.attachDayVoyant(state.current);
 }
 
 /* TEAM (vue équipe globale, codes couleur) */
@@ -2282,7 +2592,7 @@ function readFile(file){
 function showApp(){
   document.getElementById('empty').style.display='none';
   document.getElementById('app').style.display='grid';
-  ['searchTop','settingsTop','clock'].forEach(id=>document.getElementById(id).style.display='flex');
+  ['searchTop','settingsTop','clock','rttTop'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
   syncNav();renderStats();renderPeople();
   applyEnabledViews();
   maybeShowUpdateToast();
@@ -2498,7 +2808,7 @@ document.getElementById('modalClose').onclick=closeOverlay;
 document.getElementById('overlay').onclick=e=>{if(e.target.id==='overlay')closeOverlay();};
 document.getElementById('searchOv').onclick=e=>{if(e.target.id==='searchOv'){e.currentTarget.classList.remove('show');setTab('plan');}};
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeOverlay();document.getElementById('searchOv').classList.remove('show');hideSettings();document.getElementById('admin').classList.remove('show');document.getElementById('vuePicker').classList.remove('show');}
+  if(e.key==='Escape'){closeOverlay();document.getElementById('searchOv').classList.remove('show');hideSettings();document.getElementById('admin').classList.remove('show');document.getElementById('vuePicker').classList.remove('show');if(window.RTT)RTT.close();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'&&document.getElementById('app').style.display!=='none'){e.preventDefault();openSearch();}
 });
 
@@ -2544,10 +2854,12 @@ document.getElementById('pickerSearch').oninput=renderPickerList;
 /* barre d'onglets (mobile) */
 document.querySelectorAll('#bottomNav .tab').forEach(b=>b.onclick=()=>{
   const t=b.dataset.tab;
+  if(t!=='rtt'&&window.RTT)RTT.close();
   if(t==='plan')goPlanning();
   else if(t==='vue')openVuePicker();
   else if(t==='people'){setTab('people');showPicker();}
   else if(t==='search')openSearch();
+  else if(t==='rtt'){if(window.RTT)RTT.open();}
   else if(t==='settings')showSettings();
 });
 
@@ -2607,8 +2919,9 @@ let adminUnlocked=false;
 let currentAdminPassword="";  // mémorisé le temps de la session, pour pouvoir revenir à l'identité admin après un changement de code d'ouverture
 function requestAdmin(){
   if(adminUnlocked){openAdmin();return;}
-  const code=prompt('Code administrateur :');
-  if(code===null)return;
+  const raw=prompt('Code administrateur :');
+  if(raw===null)return;
+  const code=raw.trim();
   if(!fbReady){
     if(code===DEFAULT_ADMIN_PASSWORD){adminUnlocked=true;openAdmin();}
     else alert('Code incorrect.');
@@ -2644,7 +2957,10 @@ function fillFbFields(){
   const map={fbApiKey:'apiKey',fbAuthDomain:'authDomain',fbDbUrl:'databaseURL',fbProjectId:'projectId',fbStorage:'storageBucket',fbSender:'messagingSenderId',fbAppId:'appId'};
   for(const id in map){const el=document.getElementById(id);if(el){const v=cfg[map[id]];el.value=(v&&v!=='A_REMPLACER')?v:'';}}
   const st=document.getElementById('fbStatus');
+  const hasOverride=!!getLocalFbOverride();
   if(st)st.innerHTML=fbReady?'<span style="color:#30d158">Connecté ('+esc(cfg.projectId||'')+')</span>':'<span style="color:#ff9f0a">Non connecté</span>';
+  const banner=document.getElementById('fbOverrideBanner');
+  if(banner)banner.style.display=hasOverride?'flex':'none';
 }
 function closeAdmin(){document.getElementById('admin').classList.remove('show');}
 function adminDataInfoFill(){const el=document.getElementById('adminDataInfo');if(el)el.innerHTML=state.generated?`Dernière mise à jour : <b>${esc(state.generated)}</b> ${state.srcType?'('+state.srcType+')':''} · ${state.entries.length} affectations`:'Aucune donnée chargée.';}
@@ -2788,7 +3104,7 @@ document.getElementById('fbSave').onclick=()=>{
   const cfg=readFbFields();
   if(!cfg.apiKey||!cfg.databaseURL){alert('Au minimum « apiKey » et « databaseURL » sont nécessaires.');return;}
   lsSet('fb_config',JSON.stringify(cfg));
-  alert('Configuration enregistrée. L\'application va se recharger pour se connecter à Firebase.');
+  alert('Configuration enregistrée SUR CET APPAREIL UNIQUEMENT (elle prévaudra sur firebase-config.json ici, même après une mise à jour du fichier partagé — utilisez « Effacer la configuration saisie » pour revenir au fichier). L\'application va se recharger.');
   location.reload();
 };
 document.getElementById('fbDownload').onclick=()=>{
@@ -2808,6 +3124,10 @@ document.getElementById('fbTest').onclick=()=>{
 document.getElementById('fbReset').onclick=()=>{
   if(!confirm('Effacer la configuration Firebase saisie sur cet appareil ?'))return;
   lsDel('fb_config');alert('Configuration effacée. Rechargement…');location.reload();
+};
+document.getElementById('fbClearOverrideInline').onclick=()=>{
+  if(!confirm('Revenir au fichier firebase-config.json partagé sur cet appareil ?'))return;
+  lsDel('fb_config');location.reload();
 };
 document.getElementById('pwOpenSave').onclick=()=>{
   const oldP=document.getElementById('pwOpenOld').value.trim();
@@ -2898,7 +3218,7 @@ function shakeLock(msg){
   const card=document.querySelector('#lock .lock-card');card.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:240});
 }
 function tryUnlock(){
-  const v=document.getElementById('lockInput').value;
+  const v=document.getElementById('lockInput').value.trim();
   if(!fbReady){
     // Mode sans Firebase : repli local simple (pas de vérification serveur)
     if(v&&v===DEFAULT_PASSWORD){lsSet('unlocked','1');lsSet('unlocked_pw',v);document.getElementById('lock').classList.remove('show');startApp();}
@@ -2996,8 +3316,9 @@ function openFbWizardAtStep5FromLock(){
   document.getElementById('fbWizard').classList.add('show');
 }
 document.getElementById('lockFbLink').onclick=()=>{
-  const code=prompt('Code administrateur, pour modifier la connexion Firebase :');
-  if(code===null)return;
+  const raw=prompt('Code administrateur, pour modifier la connexion Firebase :');
+  if(raw===null)return;
+  const code=raw.trim();
   if(!code){alert('Code incorrect.');return;}
   const proceed=()=>{document.getElementById('lock').classList.remove('show');openFbWizardAtStep5FromLock();};
   if(!fbReady){
@@ -3084,5 +3405,639 @@ initFirebase().then(bootWithTeam);
 
 
 </script>
+<!-- ===== Module RTT : logique (cycles 8 semaines, agent, management) ===== -->
+<script>
+const RTT = (function(){
+  const CYCLE_WEEKS=8, CYCLE_DAYS=CYCLE_WEEKS*7; // 8 semaines = 56 jours
+  const CET_MAX_DEFAULT=15, QUOTAS=[8,5];
+
+  /* ---------- clés & dates (réutilise startOfWeek/addDays/dayStart/esc/initials/SPECIAL du cœur de l'app) ---------- */
+  function keyFor(name){
+    try{ return btoa(unescape(encodeURIComponent(name))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+    catch(e){ return (name||'').replace(/[.#$/\[\]]/g,'_'); }
+  }
+  function isoD(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function parseISO(s){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||''); return m?new Date(+m[1],+m[2]-1,+m[3]):null; }
+  async function sha256(txt){
+    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));
+    return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+
+  /* ---------- COUCHE DE PERSISTANCE (Firebase Realtime DB aujourd'hui ; prête pour Firestore) ----------
+     Toute lecture/écriture RTT passe par ce seul objet : pour migrer vers Firestore, il suffit de
+     réécrire ces 8 méthodes (les collections seraient rtt/config, rtt/agents/{id}, rtt/entries/{id}). */
+  const LS='rtt_local';
+  function lsAll(){ try{return JSON.parse(localStorage.getItem(LS)||'{}');}catch(e){return {};} }
+  function lsSave(o){ try{localStorage.setItem(LS,JSON.stringify(o));}catch(e){} }
+  const Store={
+    getConfig(){ return fbReady ? fbGet('rtt/config').then(o=>o||{}) : Promise.resolve(lsAll().config||{}); },
+    setConfig(cfg){ if(fbReady) return fbSet('rtt/config',cfg); const o=lsAll();o.config=cfg;lsSave(o);return Promise.resolve(); },
+    getAgent(name){ const k=keyFor(name); return fbReady ? fbGet('rtt/agents/'+k).then(o=>o||{}) : Promise.resolve((lsAll().agents||{})[k]||{}); },
+    setAgent(name,meta){ const k=keyFor(name); if(fbReady) return fbSet('rtt/agents/'+k,meta); const o=lsAll();o.agents=o.agents||{};o.agents[k]=meta;lsSave(o);return Promise.resolve(); },
+    getEntries(name){ const k=keyFor(name); return fbReady ? fbGet('rtt/entries/'+k).then(o=>o||{}) : Promise.resolve((lsAll().entries||{})[k]||{}); },
+    setEntries(name,map){ const k=keyFor(name); if(fbReady) return fbSet('rtt/entries/'+k,map); const o=lsAll();o.entries=o.entries||{};o.entries[k]=map;lsSave(o);return Promise.resolve(); },
+    setEntry(name,dateISO,type){ // type: 'rtt' | 'cet' | null (supprime)
+      const k=keyFor(name);
+      if(fbReady){ return fbDB.ref('rtt/entries/'+k+'/'+dateISO).set(type||null); }
+      const o=lsAll();o.entries=o.entries||{};o.entries[k]=o.entries[k]||{};
+      if(type)o.entries[k][dateISO]=type; else delete o.entries[k][dateISO];
+      lsSave(o);return Promise.resolve();
+    },
+    // CET : nombre de jours placés par an (sans date). rtt/cet/<key>/<année> = entier
+    getCet(name){ const k=keyFor(name); return fbReady ? fbGet('rtt/cet/'+k).then(o=>o||{}) : Promise.resolve((lsAll().cet||{})[k]||{}); },
+    setCet(name,year,n){
+      const k=keyFor(name);
+      if(fbReady){ return fbDB.ref('rtt/cet/'+k+'/'+year).set(n||null); }
+      const o=lsAll();o.cet=o.cet||{};o.cet[k]=o.cet[k]||{}; if(n)o.cet[k][year]=n; else delete o.cet[k][year]; lsSave(o);return Promise.resolve();
+    },
+    // Mot de passe (hash) dans une branche séparée : inscriptible par l'agent lui-même. rtt/pw/<key>
+    getPw(name){
+      const k=keyFor(name);
+      if(fbReady) return fbGet('rtt/pw/'+k).then(h=>h||null).then(h=> h!==null ? h : fbGet('rtt/agents/'+k+'/pwHash').then(x=>x||null)); // repli hérité
+      const o=lsAll(); const h=(o.pw||{})[k]; if(h)return Promise.resolve(h); return Promise.resolve(((o.agents||{})[k]||{}).pwHash||null);
+    },
+    setPw(name,hash){ const k=keyFor(name); if(fbReady) return fbSet('rtt/pw/'+k,hash); const o=lsAll();o.pw=o.pw||{};o.pw[k]=hash;lsSave(o);return Promise.resolve(); }
+  };
+
+  /* ---------- calcul des cycles ---------- */
+  function cycleStart(cfg){ return parseISO(cfg&&cfg.cycleStart) || startOfWeek(new Date()); }
+  function cetMax(cfg){ const n=cfg&&+cfg.cetMax; return (n>=0&&!isNaN(n))?n:CET_MAX_DEFAULT; }
+  function cycleIndexOf(cfg,d){ const diff=Math.floor((dayStart(d)-dayStart(cycleStart(cfg)))/864e5); return Math.floor(diff/CYCLE_DAYS); }
+  function cycleRange(cfg,idx){ const a=addDays(cycleStart(cfg),idx*CYCLE_DAYS); return [a,addDays(a,CYCLE_DAYS-1)]; }
+  // Compte pour un cycle donné et une année : {rtt, cet}
+  function countCycle(entries,cfg,idx){
+    const [a,b]=cycleRange(cfg,idx); let rtt=0;
+    for(const k in entries){ if(entries[k]==='rtt'){ const d=parseISO(k); if(d&&d>=dayStart(a)&&d<=dayStart(b))rtt++; } }
+    return rtt;
+  }
+  function countCetYear(entries,year){
+    let c=0; for(const k in entries){ if(entries[k]==='cet'){ const d=parseISO(k); if(d&&d.getFullYear()===year)c++; } } return c;
+  }
+  // total de tous les RTT posés (tous cycles confondus)
+  function countAll(entries){ let c=0; for(const k in entries){ if(entries[k]==='rtt')c++; } return c; }
+  // CET saisi (nombre) pour une année
+  function cetOf(cetMap,year){ const n=cetMap&&+cetMap[year]; return (n>0)?n:0; }
+
+  /* ---------- état module ---------- */
+  const S={cfg:{},agent:null,entries:{},dashIdx:0,mgrIdx:0,pending:null,mgrMode:'graph'};
+
+  /* ---------- navigation entre panneaux ---------- */
+  function show(){ document.getElementById('rtt').classList.add('show'); if(typeof setTab==='function')setTab('rtt'); }
+  function panel(name){
+    document.querySelectorAll('#rtt .rtt-panel').forEach(p=>p.classList.toggle('on',p.dataset.rttpanel===name));
+    const back=document.getElementById('rttBack');
+    back.style.visibility=(name==='gate')?'hidden':'visible';
+    const title=document.getElementById('rttTitle'),sub=document.getElementById('rttSub');
+    if(name==='gate'){title.textContent='RTT';sub.textContent='Poser vos RTT et suivre votre Compte Épargne Temps.';}
+    else if(name==='login'){title.textContent='Espace agent';sub.textContent='Sélectionnez votre nom, puis saisissez votre mot de passe.';}
+    else if(name==='dash'){title.textContent=S.agent||'Mon espace';sub.textContent='Vue strictement personnelle — vos RTT et votre CET.';}
+    else if(name==='mgr'){title.textContent='Synthèse équipe';sub.textContent='Récapitulatif des RTT et du CET de chaque agent.';}
+    else if(name==='pw'){title.textContent='Mon mot de passe';sub.textContent='Choisissez un nouveau mot de passe personnel.';}
+    else if(name==='agentdetail'){title.textContent='Détail agent';sub.textContent='RTT par cycle et dates détaillées.';}
+    S.panelName=name;
+  }
+
+  function open(){
+    show(); panel('gate');
+    const hint=document.getElementById('rttFbHint');
+    hint.textContent=fbReady?'Données synchronisées avec toute l\u2019équipe via Firebase.':'Firebase non connecté : les données RTT restent sur cet appareil uniquement.';
+    Store.getConfig().then(cfg=>{S.cfg=cfg||{};});
+  }
+  function close(){ document.getElementById('rtt').classList.remove('show'); }
+  function back(){
+    if(S.panelName==='login'||S.panelName==='mgr'){ panel('gate'); }
+    else if(S.panelName==='dash'){ S.agent=null;S.entries={};S.cet=null;S.plan=null;panel('gate'); }
+    else if(S.panelName==='pw'){ panel('dash'); renderDash(); }
+    else if(S.panelName==='agentdetail'){ panel('mgr'); renderMgr(); }
+  }
+
+  /* ---------- liste des agents (réutilise les profils déjà présents dans l'application) ---------- */
+  function realAgents(){ return (state.people||[]).filter(n=>!SPECIAL.test(n)); }
+
+  /* ---------- RTT déjà posés sur le planning (tâche JRTT) ----------
+     Dérivés en lecture seule depuis les données du planning : ils s'affichent et comptent
+     automatiquement, mais ne sont jamais réécrits dans Firebase (donc toujours synchro
+     avec le planning republié). Les entrées multi-jours sont étendues jour par jour. */
+  function planRttFor(name){
+    const map={};
+    const list=(state.byPerson&&state.byPerson.get(name))||[];
+    for(const e of list){
+      if(!e.tache||String(e.tache).toUpperCase()!=='JRTT')continue;
+      const s=dayStart(e.date), f=e.end?dayStart(e.end):s;
+      for(let d=new Date(s); d<=f; d=addDays(d,1)){
+        const g=d.getDay(); if(g===0||g===6)continue; // RTT = jours ouvrés
+        map[isoD(d)]='rtt';
+      }
+    }
+    return map;
+  }
+  // fusion : le planning fait foi (jours verrouillés), les saisies manuelles complètent
+  function combineEntries(plan,manual){ return Object.assign({},manual||{},plan||{}); }
+
+  /* ========== CONNEXION AGENT ========== */
+  async function openAgentLogin(){
+    panel('login');
+    S.pending=null;
+    document.getElementById('rttLoginSearch').value='';
+    document.getElementById('rttLoginPwWrap').style.display='none';
+    document.getElementById('rttLoginErr').textContent='';
+    document.getElementById('rttLoginList').innerHTML='<div class="rtt-empty">Chargement…</div>';
+    // les agents au forfait jour n'ont pas droit aux RTT : on les retire de l'espace personnel
+    const ags=realAgents();
+    const metas=await Promise.all(ags.map(n=>Store.getAgent(n)));
+    S.forfait=new Set(ags.filter((n,i)=>isForfait(metas[i]||{})));
+    renderLoginList('');
+    setTimeout(()=>{if(window.matchMedia('(min-width:901px)').matches)document.getElementById('rttLoginSearch').focus();},60);
+  }
+  function renderLoginList(q){
+    const box=document.getElementById('rttLoginList');box.innerHTML='';
+    const list=realAgents().filter(n=>!(S.forfait&&S.forfait.has(n))); let n=0;
+    if(!list.length){box.innerHTML='<div class="rtt-empty">Aucun agent éligible aux RTT (les forfaits jour sont exclus).</div>';return;}
+    const nq=normKey(q||'');
+    for(const name of list){
+      if(nq&&!normKey(name).includes(nq))continue; n++;
+      const b=document.createElement('button');b.className='rtt-login-item'+(S.pending===name?' on':'');
+      b.innerHTML='<span class="av">'+initials(name)+'</span><span class="nm">'+esc(name)+'</span>';
+      b.onclick=()=>selectLogin(name);
+      box.appendChild(b);
+    }
+    if(!n)box.innerHTML='<div class="rtt-empty">Aucun résultat.</div>';
+  }
+  function selectLogin(name){
+    S.pending=name;
+    renderLoginList(document.getElementById('rttLoginSearch').value);
+    document.getElementById('rttLoginPwWrap').style.display='block';
+    document.getElementById('rttLoginErr').textContent='';
+    const pw=document.getElementById('rttLoginPw');pw.value='';
+    setTimeout(()=>pw.focus(),40);
+  }
+  async function doLogin(){
+    const name=S.pending; if(!name)return;
+    const err=document.getElementById('rttLoginErr');
+    const raw=document.getElementById('rttLoginPw').value.trim();
+    const meta=await Store.getAgent(name);
+    if(isForfait(meta)){ err.textContent='Régime forfait jour : pas de RTT, accès personnel non applicable.'; return; }
+    const storedHash=await Store.getPw(name);
+    if(!storedHash){ err.textContent='Aucun mot de passe défini pour vous. Contactez le management.'; return; }
+    if(!raw){ err.textContent='Saisissez votre mot de passe.'; return; }
+    const h=await sha256(raw);
+    if(h!==storedHash){ err.textContent='Mot de passe incorrect.'; return; }
+    S.agent=name; S.cfg=await Store.getConfig(); S.entries=await Store.getEntries(name);
+    S.plan=planRttFor(name); S.cet=await Store.getCet(name);
+    S.agentMeta=meta; S.dashIdx=cycleIndexOf(S.cfg,new Date());
+    panel('dash'); renderDash();
+  }
+
+  /* ========== TABLEAU DE BORD AGENT ========== */
+  function quotaOf(meta){ const q=meta&&+meta.quota; return QUOTAS.includes(q)?q:8; }
+  function isForfait(meta){ return !!(meta&&meta.quota==='forfait'); }
+  function regimeLabel(meta){ return isForfait(meta)?'Forfait jour':(quotaOf(meta)+' RTT/cycle'); }
+  function renderDash(){
+    const cfg=S.cfg, idx=S.dashIdx, [a,b]=cycleRange(cfg,idx);
+    const combined=combineEntries(S.plan,S.entries);
+    S.dashCombined=combined;
+    const curIdx=cycleIndexOf(cfg,new Date());
+    document.getElementById('rttDashCycle').textContent='Cycle '+(idx+1)+(idx===curIdx?' (en cours)':'');
+    document.getElementById('rttDashDates').textContent=fmtRange(a,b);
+    const quota=quotaOf(S.agentMeta);
+    const posed=countCycle(combined,cfg,idx);
+    const rest=quota-posed;
+    const total=countAll(combined);
+    const year=a.getFullYear();
+    const cetMx=cetMax(cfg);
+    const cet=cetOf(S.cet,year);
+    document.getElementById('rttDashStats').innerHTML=
+      stat('hl',quota,'Quota / cycle')+
+      stat(rest<0?'warn':'hl',posed,'RTT posés (cycle)')+
+      stat(rest<0?'warn':'',rest,'RTT restants')+
+      stat('',total,'Total RTT posés');
+    document.getElementById('rttDashAlert').innerHTML=personalAlertHtml(cfg,combined,quota);
+    // jauges
+    const rttPct=quota>0?Math.min(posed/quota,1)*100:0;
+    const cetPct=cetMx>0?Math.min(cet/cetMx,1)*100:0;
+    document.getElementById('rttDashGauge').innerHTML=
+      gauge('RTT du cycle',posed,quota,rttPct,rest<0?'over':'rtt',rest<0?('Quota dépassé de '+(-rest)):(rest+' restant'+(rest>1?'s':'')))+
+      gauge('CET '+year,cet,cetMx,cetPct,'cet',(cetMx-cet)+' restant'+((cetMx-cet)>1?'s':''));
+    // compteur CET (nombre de jours placés, sans sélectionner de date)
+    document.getElementById('rttDashCet').innerHTML=
+      '<div class="rtt-cetbox"><div class="cl"><b>Jours placés sur le CET en '+year+'</b><span>Plafond '+cetMx+' / an — pas besoin de choisir une date</span></div>'+
+      '<div class="rtt-stepper"><button id="rttCetMinus" aria-label="moins">−</button><span class="v" id="rttCetVal">'+cet+'</span><button id="rttCetPlus" aria-label="plus">+</button></div></div>';
+    document.getElementById('rttCetMinus').onclick=()=>changeCet(year,-1);
+    document.getElementById('rttCetPlus').onclick=()=>changeCet(year,1);
+    renderGrid(cfg,idx);
+  }
+  async function changeCet(year,delta){
+    const cetMx=cetMax(S.cfg); const cur=cetOf(S.cet,year);
+    let n=cur+delta;
+    if(n<0)return;
+    if(n>cetMx){ toast('Plafond CET atteint : '+cetMx+' jours pour '+year+'.'); return; }
+    S.cet=S.cet||{}; S.cet[year]=n;
+    renderDash();
+    try{ await Store.setCet(S.agent,year,n); }catch(e){ toast('Enregistrement impossible : '+e); }
+  }
+  function gauge(title,val,max,pct,cls,note){
+    return '<div class="rtt-gg"><div class="gh"><b>'+title+'</b><span class="gv">'+val+' / '+max+'</span></div>'+
+      '<div class="rtt-track"><div class="rtt-fill '+cls+'" style="width:'+pct+'%"></div></div>'+
+      '<div style="font-size:11px;color:var(--faint);margin-top:6px">'+note+'</div></div>';
+  }
+  function stat(cls,n,k){ return '<div class="rtt-stat '+cls+'"><div class="n">'+n+'</div><div class="k">'+k+'</div></div>'; }
+  function fmtRange(a,b){
+    const f=d=>d.getDate()+' '+MONTHS_SHORT[d.getMonth()];
+    return f(a)+' → '+f(b)+' '+b.getFullYear();
+  }
+  function renderGrid(cfg,idx){
+    const box=document.getElementById('rttDashGrid');box.innerHTML='';
+    const [a]=cycleRange(cfg,idx); const today=dayStart(new Date());
+    const combined=S.dashCombined||combineEntries(S.plan,S.entries);
+    for(let w=0;w<CYCLE_WEEKS;w++){
+      const row=document.createElement('div');row.className='rtt-wk';
+      const wkMon=addDays(a,w*7);
+      row.innerHTML='<div class="wkn">S<b>'+isoWeek(wkMon)+'</b></div>';
+      for(let dow=0;dow<5;dow++){
+        const day=addDays(wkMon,dow), k=isoD(day), type=combined[k];
+        const locked=!!(S.plan&&S.plan[k]);
+        const cell=document.createElement('div');
+        cell.className='rtt-cell'+(type?(' '+type):'')+(locked?' locked':'')+(dayStart(day)<today?' past':'')+(sameDay(day,new Date())?' today-c':'');
+        cell.innerHTML=(locked?'<span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>':'')+
+          (type?'<span class="tag">'+(type==='rtt'?'RTT':'CET')+'</span>':'')+
+          '<span class="dd">'+day.getDate()+'</span><span class="mm">'+MONTHS_SHORT[day.getMonth()]+'</span>';
+        cell.onclick=locked?(()=>toast('Jour issu du planning (JRTT) — non modifiable ici.')):(()=>toggleDay(k));
+        row.appendChild(cell);
+      }
+      box.appendChild(row);
+    }
+  }
+  function isoWeek(d){ const t=new Date(d);t.setHours(0,0,0,0);t.setDate(t.getDate()+3-((t.getDay()+6)%7));
+    const w1=new Date(t.getFullYear(),0,4); return 1+Math.round(((t-w1)/864e5-3+((w1.getDay()+6)%7))/7); }
+
+  async function toggleDay(k){
+    if(S.plan&&S.plan[k]){ toast('Jour issu du planning (JRTT) — non modifiable ici.'); return; }
+    const cur=S.entries[k]; // undefined -> rtt -> (supprime)
+    let next = cur==='rtt' ? null : 'rtt';
+    const cfg=S.cfg;
+    const combined=combineEntries(S.plan,S.entries);
+    if(next==='rtt'){
+      const quota=quotaOf(S.agentMeta), posed=countCycle(combined,cfg,S.dashIdx);
+      if(posed>=quota){ toast('Quota atteint : '+quota+' RTT pour ce cycle (planning inclus).'); return; }
+    }
+    if(next) S.entries[k]=next; else delete S.entries[k];
+    renderDash();
+    try{ await Store.setEntry(S.agent,k,next); }
+    catch(e){ toast('Enregistrement impossible : '+e); }
+  }
+
+  /* ========== MODIFIER MON MOT DE PASSE (agent) ========== */
+  function openPw(){
+    document.getElementById('rttPwCur').value='';
+    document.getElementById('rttPwNew').value='';
+    document.getElementById('rttPwNew2').value='';
+    document.getElementById('rttPwErr').textContent='';
+    panel('pw');
+    setTimeout(()=>document.getElementById('rttPwCur').focus(),50);
+  }
+  async function savePw(){
+    const err=document.getElementById('rttPwErr');
+    const cur=document.getElementById('rttPwCur').value.trim();
+    const nw=document.getElementById('rttPwNew').value.trim();
+    const nw2=document.getElementById('rttPwNew2').value.trim();
+    if(!cur||!nw){ err.textContent='Remplissez tous les champs.'; return; }
+    const stored=await Store.getPw(S.agent);
+    if(!stored || await sha256(cur)!==stored){ err.textContent='Mot de passe actuel incorrect.'; return; }
+    if(nw.length<4){ err.textContent='Le nouveau mot de passe doit faire au moins 4 caractères.'; return; }
+    if(nw!==nw2){ err.textContent='Les deux nouveaux mots de passe ne correspondent pas.'; return; }
+    try{ await Store.setPw(S.agent,await sha256(nw)); toast('Mot de passe modifié.'); panel('dash'); renderDash(); }
+    catch(e){ err.textContent='Enregistrement impossible : '+e; }
+  }
+
+  /* ========== MANAGEMENT ========== */
+  function openMgr(){
+    // accès protégé : réutilise le code administrateur de l'application (Firebase Auth)
+    if(typeof adminUnlocked!=='undefined' && adminUnlocked){ return enterMgr(); }
+    const raw=prompt('Code administrateur :'); if(raw===null)return;
+    const code=raw.trim();
+    if(!fbReady){ if(code===DEFAULT_ADMIN_PASSWORD)enterMgr(); else alert('Code incorrect.'); return; }
+    if(!code){alert('Code incorrect.');return;}
+    fbAuth.signInWithEmailAndPassword(ADMIN_ACCOUNT_EMAIL,code).then(()=>{ try{adminUnlocked=true;currentAdminPassword=code;}catch(e){} enterMgr(); })
+      .catch(()=>alert('Code incorrect.'));
+  }
+  async function enterMgr(){
+    panel('mgr');
+    S.cfg=await Store.getConfig();
+    S.mgrIdx=cycleIndexOf(S.cfg,new Date());
+    fillCfgForm();
+    await renderAlerts();
+    await renderMgr();
+    renderCfgAgents();
+  }
+  // Icônes d'alerte
+  const ALERT_IC={
+    over:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+    miss:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>'
+  };
+  function alertLine(cls,inner){ return '<div class="rtt-alert '+cls+'"><span class="ic">'+ALERT_IC[cls]+'</span><div>'+inner+'</div></div>'; }
+  function cyclesWatched(cfg){ const c=cycleIndexOf(cfg,new Date()); return [{idx:c,tag:'en cours'},{idx:c+1,tag:'à venir'}]; }
+
+  // Alertes équipe (toujours visibles) : dépassement / RTT manquant sur le cycle en cours et à venir
+  async function renderAlerts(){
+    const box=document.getElementById('rttAlerts'); if(!box)return;
+    const cfg=S.cfg||await Store.getConfig();
+    const agents=realAgents();
+    const metas=await Promise.all(agents.map(n=>Store.getAgent(n)));
+    const ents=await Promise.all(agents.map(n=>Store.getEntries(n)));
+    const overs=[],miss=[];
+    cyclesWatched(cfg).forEach(w=>{
+      agents.forEach((n,i)=>{
+        const meta=metas[i]||{}; if(isForfait(meta))return;
+        const q=quotaOf(meta), e=combineEntries(planRttFor(n),ents[i]||{}), posed=countCycle(e,cfg,w.idx);
+        if(posed>q) overs.push({n,w,d:posed-q,posed,q});
+        else if(posed<q) miss.push({n,w,d:q-posed,posed,q});
+      });
+    });
+    let html='<div class="rtt-alert-head">Alertes RTT — cycle en cours & à venir</div>';
+    if(!overs.length&&!miss.length){
+      html+=alertLine('ok','Aucune anomalie : quotas respectés sur le cycle en cours et le suivant.');
+    }else{
+      overs.forEach(o=>{ html+=alertLine('over','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : <b>'+o.d+' RTT en trop</b> ('+o.posed+'/'+o.q+').'); });
+      miss.forEach(o=>{ html+=alertLine('miss','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : il manque <b>'+o.d+' RTT</b> ('+o.posed+'/'+o.q+').'); });
+    }
+    box.innerHTML=html;
+  }
+  // Alerte personnelle (espace agent)
+  function personalAlertHtml(cfg,combined,quota){
+    let html='';
+    cyclesWatched(cfg).forEach(w=>{
+      const posed=countCycle(combined,cfg,w.idx);
+      if(posed>quota) html+=alertLine('over','Cycle '+(w.idx+1)+' ('+w.tag+') : <b>'+(posed-quota)+' RTT en trop</b> ('+posed+'/'+quota+').');
+      else if(posed<quota) html+=alertLine('miss','Cycle '+(w.idx+1)+' ('+w.tag+') : il vous manque <b>'+(quota-posed)+' RTT</b> ('+posed+'/'+quota+').');
+    });
+    return html;
+  }
+  async function renderMgr(){
+    const cfg=S.cfg, idx=S.mgrIdx, [a,b]=cycleRange(cfg,idx), year=a.getFullYear();
+    const curIdx=cycleIndexOf(cfg,new Date());
+    document.getElementById('rttMgrCycle').textContent='Cycle '+(idx+1)+(idx===curIdx?' (en cours)':'');
+    document.getElementById('rttMgrDates').textContent=fmtRange(a,b);
+    const agents=realAgents(), tbl=document.getElementById('rttMgrTbl'), graph=document.getElementById('rttMgrGraph');
+    if(!agents.length){ tbl.innerHTML='<tr><td class="rtt-empty">Aucun agent dans les données du planning.</td></tr>'; graph.innerHTML='<div class="rtt-empty">Aucun agent dans les données du planning.</div>'; return; }
+    const metas=await Promise.all(agents.map(n=>Store.getAgent(n)));
+    const ents=await Promise.all(agents.map(n=>Store.getEntries(n)));
+    const cets=await Promise.all(agents.map(n=>Store.getCet(n)));
+    const cetMx=cetMax(cfg);
+    const rows=agents.map((n,i)=>{ const meta=metas[i]||{}, e=combineEntries(planRttFor(n),ents[i]||{}); const forf=isForfait(meta); const q=quotaOf(meta), posed=countCycle(e,cfg,idx); return {n,forf,q,posed,rest:q-posed,total:countAll(e),cet:cetOf(cets[i],year)}; });
+    // --- tableau ---
+    tbl.innerHTML='<thead><tr><th>Agent</th><th>Régime</th><th>Posés</th><th>Restants</th><th>Total</th><th>CET '+year+'</th></tr></thead><tbody id="rttMgrBody"></tbody>';
+    const body=tbl.querySelector('tbody');
+    rows.forEach(r=>{
+      const tr=document.createElement('tr');
+      if(r.forf){
+        tr.innerHTML='<td><span class="rtt-av"><span class="av">'+initials(r.n)+'</span>'+esc(r.n)+'</span></td>'+
+          '<td colspan="4" style="color:var(--soft);font-style:italic">Forfait jour — pas de RTT</td>'+
+          '<td><span class="cetv">'+r.cet+'</span> <span style="color:var(--faint);font-size:11px">/ '+cetMx+'</span></td>';
+      } else {
+        const rc=r.rest<0?'rest-over':(r.rest===0?'rest-full':'rest-ok');
+        tr.innerHTML='<td><span class="rtt-av"><span class="av">'+initials(r.n)+'</span>'+esc(r.n)+'</span></td>'+
+          '<td class="big">'+r.q+'</td><td class="big">'+r.posed+'</td>'+
+          '<td class="big '+rc+'">'+r.rest+'</td>'+
+          '<td class="big">'+r.total+'</td>'+
+          '<td><span class="cetv">'+r.cet+'</span> <span style="color:var(--faint);font-size:11px">/ '+cetMx+'</span></td>';
+      }
+      tr.onclick=()=>openAgentDetail(r.n);
+      body.appendChild(tr);
+    });
+    // --- graphique par agent ---
+    graph.innerHTML='';
+    rows.forEach(r=>{
+      const div=document.createElement('div');div.className='rtt-grow';
+      if(r.forf){
+        div.innerHTML='<div class="gr-h"><span class="av">'+initials(r.n)+'</span><span class="nm" title="'+esc(r.n)+'">'+esc(r.n)+'</span><span class="qn" style="color:var(--soft);font-style:italic">Forfait jour</span>'+
+            '<svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>'+
+          '<div class="rtt-bar-lbl"><span>Pas de RTT (forfait)</span><span class="cetv">CET '+year+' : '+r.cet+' / '+cetMx+'</span></div>';
+      } else {
+        const over=r.rest<0, pct=r.q>0?Math.min(r.posed/r.q,1)*100:0, cpct=cetMx>0?Math.min(r.cet/cetMx,1)*100:0;
+        const restTxt=over?('dépassé de '+(-r.rest)):(r.rest+' restant'+(r.rest>1?'s':''));
+        div.innerHTML='<div class="gr-h"><span class="av">'+initials(r.n)+'</span><span class="nm" title="'+esc(r.n)+'">'+esc(r.n)+'</span><span class="qn">quota '+r.q+' · total '+r.total+'</span>'+
+            '<svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>'+
+          '<div class="rtt-bar-lbl"><span>RTT posés (cycle)</span><span style="color:'+(over?'#ff453a':'var(--ink)')+';font-weight:700">'+r.posed+' / '+r.q+' · '+restTxt+'</span></div>'+
+          '<div class="rtt-track"><div class="rtt-fill '+(over?'over':'rtt')+'" style="width:'+pct+'%"></div></div>'+
+          '<div class="rtt-bar-lbl" style="margin-top:8px"><span>CET '+year+'</span><span class="cetv">'+r.cet+' / '+cetMx+'</span></div>'+
+          '<div class="rtt-track"><div class="rtt-fill cet" style="width:'+cpct+'%"></div></div>';
+      }
+      div.onclick=()=>openAgentDetail(r.n);
+      graph.appendChild(div);
+    });
+    applyMgrMode();
+  }
+
+  // Détail d'un agent : RTT groupés par cycle avec les dates.
+  async function openAgentDetail(name){
+    const cfg=S.cfg=await Store.getConfig();
+    const meta=await Store.getAgent(name);
+    const manual=await Store.getEntries(name);
+    const cetMap=await Store.getCet(name);
+    const plan=planRttFor(name);
+    const combined=combineEntries(plan,manual);
+    const q=quotaOf(meta), cetMx=cetMax(cfg), forf=isForfait(meta);
+    // regrouper les RTT par cycle
+    const byCyc={};
+    Object.keys(combined).forEach(k=>{ if(combined[k]!=='rtt')return; const d=parseISO(k); if(!d)return; const ci=cycleIndexOf(cfg,d); (byCyc[ci]=byCyc[ci]||[]).push(k); });
+    const cycles=Object.keys(byCyc).map(Number).sort((x,y)=>x-y);
+    const total=countAll(combined);
+    // CET par année
+    const cetYears=Object.keys(cetMap||{}).filter(y=>cetOf(cetMap,y)>0).sort();
+    const cetTxt=cetYears.length?cetYears.map(y=>y+' : '+cetOf(cetMap,y)).join(' · '):'—';
+    document.getElementById('rttDetailHead').innerHTML=
+      '<div class="rtt-detail-hd"><div class="nm"><span class="av">'+initials(name)+'</span><b>'+esc(name)+'</b></div>'+
+      '<div class="rtt-detail-kpis"><div class="k"><div class="n" style="'+(forf?'font-size:14px':'')+'">'+(forf?'Forfait':q)+'</div><div class="l">'+(forf?'Régime':'Quota/cycle')+'</div></div>'+
+        '<div class="k"><div class="n">'+total+'</div><div class="l">Total RTT posés</div></div>'+
+        '<div class="k"><div class="n">'+cetTxt+'</div><div class="l">CET (jours/an)</div></div></div></div>';
+    let html='';
+    if(forf){ html='<div class="rtt-alert miss" style="margin-bottom:0"><span class="ic">'+ALERT_IC.miss+'</span><div>Agent au <b>forfait jour</b> : pas de droit à RTT. Absent de l\u2019espace personnel.</div></div>'; }
+    else if(!cycles.length){ html='<div class="rtt-empty">Aucun RTT posé pour cet agent.</div>'; }
+    if(!forf) cycles.forEach(ci=>{
+      const [ca,cb]=cycleRange(cfg,ci); const dates=byCyc[ci].sort();
+      const over=dates.length>q;
+      html+='<div class="rtt-cyc"><div class="ch"><b>Cycle '+(ci+1)+'</b><span class="rg">'+fmtRange(ca,cb)+'</span></div>'+
+        '<div class="ct" style="color:'+(over?'#ff453a':'var(--blue-2)')+';margin-bottom:8px">'+dates.length+' RTT / quota '+q+(over?' · dépassement':'')+'</div>'+
+        '<div class="rtt-chips">'+dates.map(k=>{ const d=parseISO(k), isPlan=!!plan[k];
+          return '<span class="rtt-chip'+(isPlan?' plan':'')+'">'+(isPlan?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>':'')+d.getDate()+' '+MONTHS_SHORT[d.getMonth()]+' '+d.getFullYear()+'</span>';
+        }).join('')+'</div></div>';
+    });
+    document.getElementById('rttDetailBody').innerHTML=html;
+    panel('agentdetail');
+  }
+  function applyMgrMode(){
+    const showTable=S.mgrMode==='table';
+    const g=document.getElementById('rttMgrGraph'), tw=document.getElementById('rttMgrTblWrap');
+    if(g)g.style.display=showTable?'none':'flex';
+    if(tw)tw.style.display=showTable?'block':'none';
+    document.querySelectorAll('#rttMgrToggle button').forEach(x=>x.classList.toggle('on',x.dataset.mode===S.mgrMode));
+  }
+
+  /* ---- configuration (partie administrateur / management) ---- */
+  function fillCfgForm(){
+    const s=document.getElementById('rttCfgStart');
+    s.value = (S.cfg&&S.cfg.cycleStart) ? S.cfg.cycleStart : isoD(startOfWeek(new Date()));
+    document.getElementById('rttCfgCet').value = cetMax(S.cfg);
+    document.getElementById('rttCfgState').textContent='';
+  }
+  async function saveCfg(){
+    const start=document.getElementById('rttCfgStart').value;
+    const cet=+document.getElementById('rttCfgCet').value;
+    const d=parseISO(start);
+    if(!d){ document.getElementById('rttCfgState').textContent='Date de début invalide.'; return; }
+    S.cfg=Object.assign({},S.cfg,{cycleStart:start,cetMax:(cet>=0?cet:CET_MAX_DEFAULT)});
+    try{ await Store.setConfig(S.cfg); document.getElementById('rttCfgState').innerHTML='<span style="color:#30d158">Configuration enregistrée '+(fbReady?'(partagée)':'(locale)')+'.</span>'; S.mgrIdx=cycleIndexOf(S.cfg,new Date()); renderAlerts(); renderMgr(); }
+    catch(e){ document.getElementById('rttCfgState').textContent='Échec : '+e; }
+  }
+  async function renderCfgAgents(){
+    const wrap=document.getElementById('rttCfgAgents');wrap.innerHTML='';
+    const agents=realAgents();
+    if(!agents.length){wrap.innerHTML='<p class="notif-note">Aucun agent.</p>';return;}
+    const metas=await Promise.all(agents.map(n=>Store.getAgent(n)));
+    const pws=await Promise.all(agents.map(n=>Store.getPw(n)));
+    agents.forEach((n,i)=>{
+      const meta=metas[i]||{}, q=quotaOf(meta), forf=isForfait(meta), hasPw=!!pws[i];
+      const row=document.createElement('div');row.className='rtt-cfg-agent';
+      row.innerHTML='<span class="nm" title="'+esc(n)+'">'+esc(n)+'</span>'+
+        '<span class="rtt-quota-seg" data-name="'+esc(n)+'">'+
+          '<button data-q="8" class="'+(!forf&&q===8?'on':'')+'">8</button>'+
+          '<button data-q="5" class="'+(!forf&&q===5?'on':'')+'">5</button>'+
+          '<button data-q="forfait" class="'+(forf?'on':'')+'">Forfait</button>'+
+        '</span>'+
+        '<button class="rtt-pw-btn'+(hasPw?' set':'')+'" data-pw="'+esc(n)+'">'+(hasPw?'🔑 Modifier':'🔒 Définir')+'</button>';
+      row.querySelectorAll('.rtt-quota-seg button').forEach(bt=>bt.onclick=()=>setQuota(n,bt.dataset.q==='forfait'?'forfait':+bt.dataset.q,row));
+      row.querySelector('[data-pw]').onclick=()=>setAgentPw(n,row);
+      wrap.appendChild(row);
+    });
+  }
+  async function setQuota(name,q,row){
+    const meta=await Store.getAgent(name);
+    meta.quota=q; meta.name=name;
+    await Store.setAgent(name,meta);
+    row.querySelectorAll('.rtt-quota-seg button').forEach(b=>b.classList.toggle('on',(b.dataset.q==='forfait'?'forfait':+b.dataset.q)===q));
+    renderMgr(); renderAlerts();
+  }
+  async function setAgentPw(name,row){
+    const raw=prompt('Mot de passe pour «\u00a0'+name+'\u00a0» (min. 4 caractères) :');
+    if(raw===null)return;
+    const pw=raw.trim();
+    if(pw.length<4){alert('Trop court (4 caractères minimum).');return;}
+    await Store.setPw(name,await sha256(pw));
+    const btn=row.querySelector('[data-pw]'); btn.classList.add('set'); btn.textContent='🔑 Modifier';
+    toast('Mot de passe défini pour '+name+'.');
+  }
+
+  /* ---------- petit toast ---------- */
+  function toast(msg){
+    let t=document.getElementById('rttToast');
+    if(!t){ t=document.createElement('div');t.id='rttToast';
+      t.style.cssText='position:fixed;left:50%;bottom:calc(var(--nav-h) + 20px);transform:translateX(-50%);z-index:99;background:var(--glass);border:1px solid var(--line-2);color:var(--ink);padding:11px 16px;border-radius:13px;font-size:13px;font-weight:600;backdrop-filter:blur(14px);box-shadow:var(--sh);max-width:88vw;text-align:center;opacity:0;transition:.2s';
+      document.body.appendChild(t); }
+    t.textContent=msg; t.style.opacity='1';
+    clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity='0',2600);
+  }
+
+  /* ---------- câblage ---------- */
+  function init(){
+    const _rt=document.getElementById('rttTop');if(_rt)_rt.onclick=open; // bouton d'en-tête (desktop)
+    const _ar=document.getElementById('adminRttBtn');if(_ar)_ar.onclick=openManagement; // depuis l'espace administrateur
+    document.querySelectorAll('#rttMgrToggle button').forEach(bt=>bt.onclick=()=>{S.mgrMode=bt.dataset.mode;applyMgrMode();});
+    document.getElementById('rttQuit').onclick=()=>{close();if(typeof goPlanning==='function')goPlanning();};
+    document.getElementById('rttBack').onclick=back;
+    document.getElementById('rttGoAgent').onclick=openAgentLogin;
+    document.getElementById('rttGoMgr').onclick=openMgr;
+    document.getElementById('rttLoginSearch').oninput=e=>renderLoginList(e.target.value);
+    document.getElementById('rttLoginBtn').onclick=doLogin;
+    document.getElementById('rttLoginPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+    document.getElementById('rttDashPrev').onclick=()=>{S.dashIdx--;renderDash();};
+    document.getElementById('rttDashNext').onclick=()=>{S.dashIdx++;renderDash();};
+    document.getElementById('rttMgrPrev').onclick=()=>{S.mgrIdx--;renderMgr();};
+    document.getElementById('rttMgrNext').onclick=()=>{S.mgrIdx++;renderMgr();};
+    document.getElementById('rttCfgSave').onclick=saveCfg;
+    document.getElementById('rttChangePw').onclick=openPw;
+    document.getElementById('rttPwSave').onclick=savePw;
+    document.getElementById('rttPwNew2').addEventListener('keydown',e=>{if(e.key==='Enter')savePw();});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+
+  // Ouvre directement la gestion RTT depuis l'espace administrateur (déjà authentifié) et déplie les paramètres.
+  function openManagement(){
+    const ad=document.getElementById('admin'); if(ad)ad.classList.remove('show');
+    show();
+    Promise.resolve(enterMgr()).then(()=>{
+      const det=document.querySelector('#rtt .rtt-panel[data-rttpanel="mgr"] details');
+      if(det){ det.open=true; setTimeout(()=>{try{det.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},140); }
+    });
+  }
+
+  /* ========== VOYANT RTT dans la vue « Ma journée » (planning) ========== */
+  // Statut RTT d'une personne pour le cycle en cours et à venir (CET non compté).
+  async function statusFor(name){
+    try{
+      const cfg=await Store.getConfig();
+      if(!cfg||!cfg.cycleStart) return {available:false};
+      const meta=await Store.getAgent(name);
+      if(isForfait(meta)) return {available:true,forfait:true};
+      const quota=quotaOf(meta);
+      const combined=combineEntries(planRttFor(name),await Store.getEntries(name));
+      const cycles=cyclesWatched(cfg).map(w=>{
+        const posed=countCycle(combined,cfg,w.idx); // 'rtt' uniquement (le CET n'est pas dans ce décompte)
+        const st=posed>quota?'over':(posed<quota?'miss':'ok');
+        return {idx:w.idx,tag:w.tag,posed,quota,diff:posed-quota,state:st,range:cycleRange(cfg,w.idx)};
+      });
+      const worst=cycles.some(c=>c.state==='over')?'over':(cycles.some(c=>c.state==='miss')?'miss':'ok');
+      return {available:true,forfait:false,worst,quota,cycles};
+    }catch(e){ return {available:false}; }
+  }
+  // Ajoute (ou remplace) le voyant dans la carte d'accueil de « Ma journée ».
+  async function attachDayVoyant(name){
+    try{
+      if(!name||SPECIAL.test(name))return;
+      const hero=document.querySelector('#content .today-hero'); if(!hero)return;
+      const old=hero.querySelector('.rtt-voyant'); if(old)old.remove();
+      const st=await statusFor(name); if(!st.available||st.forfait)return; // forfait = pas de RTT, pas de voyant
+      // re-vérifier que la vue n'a pas changé entre-temps
+      const hero2=document.querySelector('#content .today-hero'); if(!hero2||hero2.querySelector('.rtt-voyant'))return;
+      const btn=document.createElement('button');
+      btn.className='rtt-voyant'; btn.dataset.state=st.worst;
+      btn.setAttribute('aria-label','Alerte RTT');
+      btn.innerHTML='<span class="dot"></span>RTT';
+      btn.onclick=ev=>{ ev.stopPropagation(); openStatusPopover(btn,name,st); };
+      hero2.appendChild(btn);
+    }catch(e){}
+  }
+  function closeStatusPopover(){ if(S._vpop){ S._vpop.back.remove(); S._vpop.pop.remove(); S._vpop=null; } }
+  function openStatusPopover(anchor,name,st){
+    closeStatusPopover();
+    const back=document.createElement('div');back.className='rtt-vback';
+    const pop=document.createElement('div');pop.className='rtt-vpop';
+    let inner='<h4>RTT — '+esc(name)+'</h4>';
+    st.cycles.forEach(c=>{
+      const [a,b]=c.range;
+      const cmt=c.state==='over'?('⚠ '+c.diff+' RTT en trop sur ce cycle')
+              :c.state==='miss'?('Il manque '+(-c.diff)+' RTT à poser')
+              :'Quota respecté';
+      inner+='<div class="cyc"><div class="t"><span>Cycle '+(c.idx+1)+' ('+c.tag+')</span><span>'+c.posed+' / '+c.quota+'</span></div>'+
+        '<div class="rgs">'+fmtRange(a,b)+'</div>'+
+        '<div class="cmt '+c.state+'">'+cmt+'</div></div>';
+    });
+    inner+='<div class="note">Décompte des RTT posés uniquement (JRTT du planning + saisis). Les jours placés sur le CET ne sont pas comptés.</div>';
+    pop.innerHTML=inner;
+    document.body.appendChild(back);document.body.appendChild(pop);
+    const r=anchor.getBoundingClientRect(), pw=pop.offsetWidth, ph=pop.offsetHeight;
+    let left=Math.max(8,Math.min(r.right-pw, window.innerWidth-8-pw));
+    let top=r.bottom+8; if(top+ph>window.innerHeight-8) top=Math.max(8,r.top-ph-8);
+    pop.style.left=left+'px'; pop.style.top=top+'px';
+    back.onclick=closeStatusPopover;
+    S._vpop={back,pop};
+  }
+
+  const api={open,close,openManagement,attachDayVoyant};
+  window.RTT=api;
+  return api;
+})();
+</script>
+
 </body>
 </html>
