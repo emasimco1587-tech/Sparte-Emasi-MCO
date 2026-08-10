@@ -1369,6 +1369,9 @@ html[data-theme="aero"] #rtt{background:rgba(4,16,26,.8)}
 .rtt-cell.cet{background:linear-gradient(145deg,var(--cyan),#0891b2);border-color:rgba(120,230,255,.4);color:#04222b}
 .rtt-cell.cet .mm{color:rgba(4,34,43,.7)}
 .rtt-cell .tag{position:absolute;top:3px;right:4px;font-size:8.5px;font-weight:800;letter-spacing:.03em}
+.rtt-cell .hb{font-size:8px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;opacity:.95}
+.rtt-cell.half::after{content:"";position:absolute;inset:0;border-radius:11px;pointer-events:none;background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(0,0,0,.16) 5px 7px)}
+html[data-theme="light"] .rtt-cell.half::after{background:repeating-linear-gradient(45deg,transparent 0 5px,rgba(255,255,255,.28) 5px 7px)}
 .rtt-cell.past{opacity:.5}
 .rtt-cell.disabled{opacity:.28;cursor:default;background:transparent;border-style:dashed}
 .rtt-cell.today-c{box-shadow:0 0 0 2px var(--blue) inset}
@@ -1581,7 +1584,7 @@ html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
           <div>Les <b>RTT pris</b> (JRTT) se demandent à votre tête d'équipe, qui les place sur <b>Sparte</b>. Ici, vous pouvez <b>placer un jour sur votre CET</b> en le sélectionnant — il compte comme un RTT posé du cycle.</div>
         </div>
-        <p class="rtt-hint">Touchez un jour ouvré libre pour le placer / retirer du CET. Les jours JRTT du planning sont verrouillés.</p>
+        <p class="rtt-hint">Touchez un jour ouvré libre pour le placer sur le CET : appuis successifs = journée → matin (½) → après-midi (½) → libre. Une demi-journée compte pour 0,5. Les jours JRTT du planning sont verrouillés.</p>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn btn-ink" id="rttChangePw" style="flex:1;justify-content:center;padding:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Mot de passe</button>
           <button class="btn btn-blue" id="rttExportMine" style="flex:1;justify-content:center;padding:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg>Export Excel</button>
@@ -1762,7 +1765,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v55";
+const APP_VERSION="v56";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -3498,17 +3501,23 @@ const RTT = (function(){
   function cetMax(cfg){ const n=cfg&&+cfg.cetMax; return (n>=0&&!isNaN(n))?n:CET_MAX_DEFAULT; }
   function cycleIndexOf(cfg,d){ const diff=Math.floor((dayStart(d)-dayStart(cycleStart(cfg)))/864e5); return Math.floor(diff/CYCLE_DAYS); }
   function cycleRange(cfg,idx){ const a=addDays(cycleStart(cfg),idx*CYCLE_DAYS); return [a,addDays(a,CYCLE_DAYS-1)]; }
-  // RTT posés d'un cycle = jours RTT (JRTT) + jours placés sur le CET (un CET compte comme un RTT posé)
+  // Valeurs d'entrée : 'rtt' | 'rtt-am' | 'rtt-pm' | 'cet' | 'cet-am' | 'cet-pm'
+  function baseType(v){ return (v&&v.indexOf('rtt')===0)?'rtt':((v&&v.indexOf('cet')===0)?'cet':null); }
+  function halfOf(v){ return (v&&v.slice(-3)==='-am')?'am':((v&&v.slice(-3)==='-pm')?'pm':null); }
+  function portion(v){ return baseType(v)?(halfOf(v)?0.5:1):0; }
+  function fnum(n){ return Number.isInteger(n)?String(n):n.toFixed(1).replace('.',','); } // 4 -> "4", 4.5 -> "4,5"
+  function partLabel(v){ const h=halfOf(v); return h==='am'?'matin':(h==='pm'?'après-midi':'journée'); }
+  // RTT posés d'un cycle = somme des portions RTT (JRTT) + CET (un CET compte comme un RTT posé) ; demi-journée = 0,5
   function countCycle(entries,cfg,idx){
     const [a,b]=cycleRange(cfg,idx); let n=0;
-    for(const k in entries){ const t=entries[k]; if(t==='rtt'||t==='cet'){ const d=parseISO(k); if(d&&d>=dayStart(a)&&d<=dayStart(b))n++; } }
+    for(const k in entries){ if(baseType(entries[k])){ const d=parseISO(k); if(d&&d>=dayStart(a)&&d<=dayStart(b))n+=portion(entries[k]); } }
     return n;
   }
   function countCetYear(entries,year){
-    let c=0; for(const k in entries){ if(entries[k]==='cet'){ const d=parseISO(k); if(d&&d.getFullYear()===year)c++; } } return c;
+    let c=0; for(const k in entries){ if(baseType(entries[k])==='cet'){ const d=parseISO(k); if(d&&d.getFullYear()===year)c+=portion(entries[k]); } } return c;
   }
-  // total de tous les RTT posés (RTT + CET, tous cycles confondus)
-  function countAll(entries){ let c=0; for(const k in entries){ const t=entries[k]; if(t==='rtt'||t==='cet')c++; } return c; }
+  // total de tous les RTT posés (RTT + CET, tous cycles), en portions
+  function countAll(entries){ let c=0; for(const k in entries){ c+=portion(entries[k]); } return c; }
   // CET saisi (nombre) pour une année
   function cetOf(cetMap,year){ const n=cetMap&&+cetMap[year]; return (n>0)?n:0; }
 
@@ -3555,12 +3564,29 @@ const RTT = (function(){
   function planRttFor(name){
     const map={};
     const list=(state.byPerson&&state.byPerson.get(name))||[];
+    const set=(iso,part)=>{ // fusionne : am+pm => journée complète
+      const cur=map[iso];
+      if(part==='full'){ map[iso]='rtt'; return; }
+      const v='rtt-'+part;
+      if(!cur){ map[iso]=v; return; }
+      if(cur==='rtt'){ return; }
+      if(cur!==v){ map[iso]='rtt'; } // un am et un pm => journée
+    };
     for(const e of list){
       if(!e.tache||String(e.tache).toUpperCase()!=='JRTT')continue;
       const s=dayStart(e.date), f=e.end?dayStart(e.end):s;
-      for(let d=new Date(s); d<=f; d=addDays(d,1)){
-        const g=d.getDay(); if(g===0||g===6)continue; // RTT = jours ouvrés
-        map[isoD(d)]='rtt';
+      if(isoD(s)===isoD(f)){
+        const g=s.getDay(); if(g===0||g===6)continue;
+        const sh=e.date.getHours()+e.date.getMinutes()/60;
+        const eh=e.end?(e.end.getHours()+e.end.getMinutes()/60):17;
+        const ch=parseFloat(String(e.charge==null?'':e.charge).replace(',','.'));
+        let part='full';
+        if(sh>=11.5 && eh>sh) part='pm';                 // débute vers midi -> après-midi
+        else if(eh<=13.5 && eh>sh) part='am';            // finit vers 12-13h -> matin
+        else if(!isNaN(ch) && ch>0 && ch<=5) part='am';  // ~demi-journée d'après la charge (horaire non probant)
+        set(isoD(s),part);
+      } else {
+        for(let d=new Date(s); d<=f; d=addDays(d,1)){ const g=d.getDay(); if(g===0||g===6)continue; set(isoD(d),'full'); }
       }
     }
     return map;
@@ -3642,16 +3668,16 @@ const RTT = (function(){
     const cet=countCetYear(combined,year);
     document.getElementById('rttDashStats').innerHTML=
       stat('hl',quota,'Quota / cycle')+
-      stat(rest<0?'warn':'hl',posed,'RTT posés (cycle)')+
-      stat(rest<0?'warn':'',rest,'RTT restants')+
-      stat('',total,'Total RTT posés');
+      stat(rest<0?'warn':'hl',fnum(posed),'RTT posés (cycle)')+
+      stat(rest<0?'warn':'',fnum(rest),'RTT restants')+
+      stat('',fnum(total),'Total RTT posés');
     document.getElementById('rttDashAlert').innerHTML=personalAlertHtml(cfg,combined,quota);
     // jauges
     const rttPct=quota>0?Math.min(posed/quota,1)*100:0;
     const cetPct=cetMx>0?Math.min(cet/cetMx,1)*100:0;
     document.getElementById('rttDashGauge').innerHTML=
-      gauge('RTT du cycle',posed,quota,rttPct,rest<0?'over':'rtt',rest<0?('Quota dépassé de '+(-rest)):(rest+' restant'+(rest>1?'s':'')))+
-      gauge('CET '+year,cet,cetMx,cetPct,'cet',(cetMx-cet)+' restant'+((cetMx-cet)>1?'s':''));
+      gauge('RTT du cycle',fnum(posed),quota,rttPct,rest<0?'over':'rtt',rest<0?('Quota dépassé de '+fnum(-rest)):(fnum(rest)+' restant'+(rest>1?'s':'')))+
+      gauge('CET '+year,fnum(cet),cetMx,cetPct,'cet',fnum(cetMx-cet)+' restant'+((cetMx-cet)>1?'s':''));
     document.getElementById('rttDashCet').innerHTML='';
     renderGrid(cfg,idx);
   }
@@ -3676,12 +3702,13 @@ const RTT = (function(){
       row.innerHTML='<div class="wkn">S<b>'+isoWeek(wkMon)+'</b></div>';
       for(let dow=0;dow<5;dow++){
         const day=addDays(wkMon,dow), k=isoD(day), type=combined[k];
-        const locked=!!(S.plan&&S.plan[k]);
+        const bt=baseType(type), hf=halfOf(type), locked=!!(S.plan&&S.plan[k]);
         const cell=document.createElement('div');
-        cell.className='rtt-cell'+(type?(' '+type):'')+(locked?' locked':'')+(dayStart(day)<today?' past':'')+(sameDay(day,new Date())?' today-c':'');
+        cell.className='rtt-cell'+(bt?(' '+bt):'')+(hf?(' half half-'+hf):'')+(locked?' locked':'')+(dayStart(day)<today?' past':'')+(sameDay(day,new Date())?' today-c':'');
         cell.innerHTML=(locked?'<span class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>':'')+
-          (type?'<span class="tag">'+(type==='rtt'?'RTT':'CET')+'</span>':'')+
-          '<span class="dd">'+day.getDate()+'</span><span class="mm">'+MONTHS_SHORT[day.getMonth()]+'</span>';
+          (bt?'<span class="tag">'+(bt==='rtt'?'RTT':'CET')+(hf?' ½':'')+'</span>':'')+
+          '<span class="dd">'+day.getDate()+'</span>'+
+          (hf?'<span class="hb">'+(hf==='am'?'matin':'aprem')+'</span>':'<span class="mm">'+MONTHS_SHORT[day.getMonth()]+'</span>');
         cell.onclick=locked?(()=>toast('Jour issu du planning (JRTT) — RTT pris via Sparte.')):(()=>toggleDay(k));
         row.appendChild(cell);
       }
@@ -3693,15 +3720,17 @@ const RTT = (function(){
 
   async function toggleDay(k){
     if(S.plan&&S.plan[k]){ toast('Jour issu du planning (JRTT) — RTT pris via Sparte.'); return; }
-    const cur=S.entries[k]; // l'agent ne gère que le CET : undefined <-> 'cet'
-    const next = cur==='cet' ? null : 'cet';
+    const cur=S.entries[k]; // libre -> cet (journée) -> cet-am (matin) -> cet-pm (après-midi) -> libre
+    const nextMap={undefined:'cet','cet':'cet-am','cet-am':'cet-pm','cet-pm':null};
+    const next = nextMap[cur===undefined?'undefined':cur];
     const cfg=S.cfg;
-    const combined=combineEntries(S.plan,S.entries);
-    if(next==='cet'){
+    if(next){
+      const tentative=Object.assign({},S.entries,{[k]:next});
+      const combined=combineEntries(S.plan,tentative);
       const quota=quotaOf(S.agentMeta), posed=countCycle(combined,cfg,S.dashIdx);
-      if(posed>=quota){ toast('Quota du cycle atteint : '+quota+' RTT (RTT pris + placés sur le CET).'); return; }
+      if(posed>quota){ toast('Quota du cycle atteint : '+quota+' RTT (RTT pris + CET, demi-journées incluses).'); return; }
       const yr=parseISO(k).getFullYear(), cet=countCetYear(combined,yr);
-      if(cet>=cetMax(cfg)){ toast('Plafond CET atteint : '+cetMax(cfg)+' jours pour '+yr+'.'); return; }
+      if(cet>cetMax(cfg)){ toast('Plafond CET atteint : '+cetMax(cfg)+' jours pour '+yr+'.'); return; }
     }
     if(next) S.entries[k]=next; else delete S.entries[k];
     renderDash();
@@ -3795,8 +3824,8 @@ const RTT = (function(){
     if(miss.length)html+='<span class="rtt-sum-chip miss"><span class="dot"></span>'+miss.length+' RTT manquant'+(miss.length>1?'s':'')+'</span>';
     html+='<button class="rtt-sum-toggle" id="rttAlertToggle">Voir le détail</button></div>';
     let list='<div class="rtt-alerts-list hidden" id="rttAlertList">';
-    overs.forEach(o=>{ list+=alertLine('over','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : <b>'+o.d+' en trop</b> ('+o.posed+'/'+o.q+').'); });
-    miss.forEach(o=>{ list+=alertLine('miss','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : il manque <b>'+o.d+'</b> ('+o.posed+'/'+o.q+').'); });
+    overs.forEach(o=>{ list+=alertLine('over','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : <b>'+fnum(o.d)+' en trop</b> ('+fnum(o.posed)+'/'+o.q+').'); });
+    miss.forEach(o=>{ list+=alertLine('miss','<span class="ag">'+esc(o.n)+'</span> — Cycle '+(o.w.idx+1)+' ('+o.w.tag+') : il manque <b>'+fnum(o.d)+'</b> ('+fnum(o.posed)+'/'+o.q+').'); });
     list+='</div>';
     box.innerHTML=html+list;
     const tg=document.getElementById('rttAlertToggle'), ls=document.getElementById('rttAlertList');
@@ -3807,8 +3836,8 @@ const RTT = (function(){
     let html='';
     cyclesWatched(cfg).forEach(w=>{
       const posed=countCycle(combined,cfg,w.idx);
-      if(posed>quota) html+=alertLine('over','Cycle '+(w.idx+1)+' ('+w.tag+') : <b>'+(posed-quota)+' RTT en trop</b> ('+posed+'/'+quota+').');
-      else if(posed<quota) html+=alertLine('miss','Cycle '+(w.idx+1)+' ('+w.tag+') : il vous manque <b>'+(quota-posed)+' RTT</b> ('+posed+'/'+quota+').');
+      if(posed>quota) html+=alertLine('over','Cycle '+(w.idx+1)+' ('+w.tag+') : <b>'+fnum(posed-quota)+' RTT en trop</b> ('+fnum(posed)+'/'+quota+').');
+      else if(posed<quota) html+=alertLine('miss','Cycle '+(w.idx+1)+' ('+w.tag+') : il vous manque <b>'+fnum(quota-posed)+' RTT</b> ('+fnum(posed)+'/'+quota+').');
     });
     return html;
   }
@@ -3831,14 +3860,14 @@ const RTT = (function(){
       if(r.forf){
         tr.innerHTML='<td><span class="rtt-av"><span class="av">'+initials(r.n)+'</span>'+esc(r.n)+'</span></td>'+
           '<td colspan="4" style="color:var(--soft);font-style:italic">Forfait jour — pas de RTT</td>'+
-          '<td><span class="cetv">'+r.cet+'</span> <span style="color:var(--faint);font-size:11px">/ '+cetMx+'</span></td>';
+          '<td><span class="cetv">'+fnum(r.cet)+'</span> <span style="color:var(--faint);font-size:11px">/ '+cetMx+'</span></td>';
       } else {
         const rc=r.rest<0?'rest-over':(r.rest===0?'rest-full':'rest-ok');
         tr.innerHTML='<td><span class="rtt-av"><span class="av">'+initials(r.n)+'</span>'+esc(r.n)+'</span></td>'+
-          '<td class="big">'+r.q+'</td><td class="big">'+r.posed+'</td>'+
-          '<td class="big '+rc+'">'+r.rest+'</td>'+
-          '<td class="big">'+r.total+'</td>'+
-          '<td><span class="cetv">'+r.cet+'</span> <span style="color:var(--faint);font-size:11px">/ '+cetMx+'</span></td>';
+          '<td class="big">'+r.q+'</td><td class="big">'+fnum(r.posed)+'</td>'+
+          '<td class="big '+rc+'">'+fnum(r.rest)+'</td>'+
+          '<td class="big">'+fnum(r.total)+'</td>'+
+          '<td><span class="cetv">'+fnum(r.cet)+'</span> <span style="color:var(--faint);font-size:11px">/ '+cetMx+'</span></td>';
       }
       tr.onclick=()=>openAgentDetail(r.n);
       body.appendChild(tr);
@@ -3850,13 +3879,13 @@ const RTT = (function(){
       if(r.forf){
         div.innerHTML='<div class="gr-h"><span class="av">'+initials(r.n)+'</span><span class="nm" title="'+esc(r.n)+'">'+esc(r.n)+'</span><span class="qn" style="color:var(--soft);font-style:italic">Forfait jour</span>'+
             '<svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>'+
-          '<div class="rtt-bar-lbl"><span>Pas de RTT (forfait)</span><span class="cetv">CET '+year+' : '+r.cet+' / '+cetMx+'</span></div>';
+          '<div class="rtt-bar-lbl"><span>Pas de RTT (forfait)</span><span class="cetv">CET '+year+' : '+fnum(r.cet)+' / '+cetMx+'</span></div>';
       } else {
         const over=r.rest<0, pct=r.q>0?Math.min(r.posed/r.q,1)*100:0, cpct=cetMx>0?Math.min(r.cet/cetMx,1)*100:0;
-        const restTxt=over?('dépassé de '+(-r.rest)):(r.rest+' restant'+(r.rest>1?'s':''));
-        div.innerHTML='<div class="gr-h"><span class="av">'+initials(r.n)+'</span><span class="nm" title="'+esc(r.n)+'">'+esc(r.n)+'</span><span class="qn">quota '+r.q+' · total '+r.total+'</span>'+
+        const restTxt=over?('dépassé de '+fnum(-r.rest)):(fnum(r.rest)+' restant'+(r.rest>1?'s':''));
+        div.innerHTML='<div class="gr-h"><span class="av">'+initials(r.n)+'</span><span class="nm" title="'+esc(r.n)+'">'+esc(r.n)+'</span><span class="qn">quota '+r.q+' · total '+fnum(r.total)+'</span>'+
             '<svg class="chev" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>'+
-          '<div class="rtt-bar-lbl"><span>RTT posés (cycle)</span><span style="color:'+(over?'#ff453a':'var(--ink)')+';font-weight:700">'+r.posed+' / '+r.q+' · '+restTxt+'</span></div>'+
+          '<div class="rtt-bar-lbl"><span>RTT posés (cycle)</span><span style="color:'+(over?'#ff453a':'var(--ink)')+';font-weight:700">'+fnum(r.posed)+' / '+r.q+' · '+restTxt+'</span></div>'+
           '<div class="rtt-track"><div class="rtt-fill '+(over?'over':'rtt')+'" style="width:'+pct+'%"></div></div>'+
           '<div class="rtt-bar-lbl" style="margin-top:8px"><span>CET '+year+'</span><span class="cetv">'+r.cet+' / '+cetMx+'</span></div>'+
           '<div class="rtt-track"><div class="rtt-fill cet" style="width:'+cpct+'%"></div></div>';
@@ -3877,30 +3906,31 @@ const RTT = (function(){
     const q=quotaOf(meta), cetMx=cetMax(cfg), forf=isForfait(meta);
     // regrouper les jours posés (RTT + CET) par cycle
     const byCyc={};
-    Object.keys(combined).forEach(k=>{ const t=combined[k]; if(t!=='rtt'&&t!=='cet')return; const d=parseISO(k); if(!d)return; const ci=cycleIndexOf(cfg,d); (byCyc[ci]=byCyc[ci]||[]).push(k); });
+    Object.keys(combined).forEach(k=>{ if(!baseType(combined[k]))return; const d=parseISO(k); if(!d)return; const ci=cycleIndexOf(cfg,d); (byCyc[ci]=byCyc[ci]||[]).push(k); });
     const cycles=Object.keys(byCyc).map(Number).sort((x,y)=>x-y);
     const total=countAll(combined);
-    // CET par année (jours placés sur le CET)
+    // CET par année (jours placés sur le CET, demi-journées comprises)
     const cetByYear={};
-    Object.keys(combined).forEach(k=>{ if(combined[k]==='cet'){ const y=parseISO(k).getFullYear(); cetByYear[y]=(cetByYear[y]||0)+1; } });
+    Object.keys(combined).forEach(k=>{ if(baseType(combined[k])==='cet'){ const y=parseISO(k).getFullYear(); cetByYear[y]=(cetByYear[y]||0)+portion(combined[k]); } });
     const cetYears=Object.keys(cetByYear).sort();
-    const cetTxt=cetYears.length?cetYears.map(y=>y+' : '+cetByYear[y]).join(' · '):'—';
+    const cetTxt=cetYears.length?cetYears.map(y=>y+' : '+fnum(cetByYear[y])).join(' · '):'—';
     document.getElementById('rttDetailHead').innerHTML=
       '<div class="rtt-detail-hd"><div class="nm"><span class="av">'+initials(name)+'</span><b>'+esc(name)+'</b></div>'+
       '<div class="rtt-detail-kpis"><div class="k"><div class="n" style="'+(forf?'font-size:14px':'')+'">'+(forf?'Forfait':q)+'</div><div class="l">'+(forf?'Régime':'Quota/cycle')+'</div></div>'+
-        '<div class="k"><div class="n">'+total+'</div><div class="l">Total RTT posés</div></div>'+
+        '<div class="k"><div class="n">'+fnum(total)+'</div><div class="l">Total RTT posés</div></div>'+
         '<div class="k"><div class="n">'+cetTxt+'</div><div class="l">CET (jours/an)</div></div></div></div>';
     let html='';
     if(forf){ html='<div class="rtt-alert miss" style="margin-bottom:0"><span class="ic">'+ALERT_IC.miss+'</span><div>Agent au <b>forfait jour</b> : pas de droit à RTT. Absent de l\u2019espace personnel.</div></div>'; }
     else if(!cycles.length){ html='<div class="rtt-empty">Aucun RTT posé pour cet agent.</div>'; }
     if(!forf) cycles.forEach(ci=>{
       const [ca,cb]=cycleRange(cfg,ci); const dates=byCyc[ci].sort();
-      const over=dates.length>q;
+      const sum=dates.reduce((s,k)=>s+portion(combined[k]),0);
+      const over=sum>q;
       html+='<div class="rtt-cyc"><div class="ch"><b>Cycle '+(ci+1)+'</b><span class="rg">'+fmtRange(ca,cb)+'</span></div>'+
-        '<div class="ct" style="color:'+(over?'#ff453a':'var(--blue-2)')+';margin-bottom:8px">'+dates.length+' / quota '+q+(over?' · dépassement':'')+'</div>'+
-        '<div class="rtt-chips">'+dates.map(k=>{ const d=parseISO(k), isPlan=!!plan[k], isCet=combined[k]==='cet';
+        '<div class="ct" style="color:'+(over?'#ff453a':'var(--blue-2)')+';margin-bottom:8px">'+fnum(sum)+' / quota '+q+(over?' · dépassement':'')+'</div>'+
+        '<div class="rtt-chips">'+dates.map(k=>{ const d=parseISO(k), v=combined[k], isPlan=!!plan[k], isCet=baseType(v)==='cet', hf=halfOf(v);
           const ic=isCet?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2v20M2 12h20"/></svg>':(isPlan?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>':'');
-          return '<span class="rtt-chip'+(isCet?' cet':(isPlan?' plan':''))+'">'+ic+d.getDate()+' '+MONTHS_SHORT[d.getMonth()]+' '+d.getFullYear()+(isCet?' (CET)':'')+'</span>';
+          return '<span class="rtt-chip'+(isCet?' cet':(isPlan?' plan':''))+'">'+ic+d.getDate()+' '+MONTHS_SHORT[d.getMonth()]+(hf?' ½'+(hf==='am'?' matin':' aprem'):'')+(isCet?' (CET)':'')+'</span>';
         }).join('')+'</div></div>';
     });
     document.getElementById('rttDetailBody').innerHTML=html;
@@ -4058,10 +4088,10 @@ const RTT = (function(){
     let inner='<h4>RTT — '+esc(name)+'</h4>';
     st.cycles.forEach(c=>{
       const [a,b]=c.range;
-      const cmt=c.state==='over'?('⚠ '+c.diff+' RTT en trop sur ce cycle')
-              :c.state==='miss'?('Il manque '+(-c.diff)+' RTT à poser')
+      const cmt=c.state==='over'?('⚠ '+fnum(c.diff)+' RTT en trop sur ce cycle')
+              :c.state==='miss'?('Il manque '+fnum(-c.diff)+' RTT à poser')
               :'Quota respecté';
-      inner+='<div class="cyc"><div class="t"><span>Cycle '+(c.idx+1)+' ('+c.tag+')</span><span>'+c.posed+' / '+c.quota+'</span></div>'+
+      inner+='<div class="cyc"><div class="t"><span>Cycle '+(c.idx+1)+' ('+c.tag+')</span><span>'+fnum(c.posed)+' / '+c.quota+'</span></div>'+
         '<div class="rgs">'+fmtRange(a,b)+'</div>'+
         '<div class="cmt '+c.state+'">'+cmt+'</div></div>';
     });
@@ -4084,12 +4114,14 @@ const RTT = (function(){
     const plan=planRttFor(name);
     const rows=[];
     Object.keys(combined).sort().forEach(k=>{
-      const d=parseISO(k); if(!d)return; const t=combined[k];
+      const d=parseISO(k); if(!d)return; const v=combined[k], bt=baseType(v); if(!bt)return;
       rows.push({
         Agent:name,
         Date:k,
         Jour:DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(),
-        Type: t==='cet'?'CET' : (plan[k]?'RTT (planning)':'RTT'),
+        Type: bt==='cet'?'CET' : (plan[k]?'RTT (planning)':'RTT'),
+        'Demi-journée': partLabel(v),
+        'Quantité': portion(v),
         'Cycle': cycleIndexOf(cfg,d)+1,
         'Régime': isForfait(meta)?'Forfait jour':(quotaOf(meta)+' RTT/cycle')
       });

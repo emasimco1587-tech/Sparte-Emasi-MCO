@@ -1,5 +1,5 @@
 // Service worker — cache l'app et les données pour un usage hors-ligne
-const CACHE = 'planning-v55';
+const CACHE = 'planning-v56';
 const ASSETS = [
   '.',
   'index.html',
