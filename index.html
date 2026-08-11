@@ -1765,7 +1765,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v56";
+const APP_VERSION="v57";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -3243,8 +3243,34 @@ document.getElementById('favSearch').oninput=renderFavList;
 document.getElementById('favSkip').onclick=()=>{lsSet('fav_asked','1');hideFavPicker();showPicker();};
 
 // PWA : service worker pour installation + hors-ligne
+// Mise à jour forcée à chaque démarrage (effet « Ctrl+F5 ») : on vérifie une nouvelle version,
+// et dès qu'elle prend le contrôle on recharge une seule fois automatiquement.
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+  let swRefreshing=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(swRefreshing)return; swRefreshing=true;
+    // ne recharge que si l'app était déjà contrôlée (donc : vraie mise à jour, pas 1er chargement)
+    if(sw_hadController) window.location.reload();
+  });
+  var sw_hadController=!!navigator.serviceWorker.controller;
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('service-worker.js').then(reg=>{
+      // force le contrôle de mise à jour à chaque lancement
+      try{ reg.update(); }catch(e){}
+      // re-vérifie aussi quand l'app repasse au premier plan
+      document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ try{ reg.update(); }catch(e){} } });
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;
+        if(!nw)return;
+        nw.addEventListener('statechange',()=>{
+          // nouvelle version installée alors qu'une ancienne tourne -> on l'active
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            try{ nw.postMessage({type:'SKIP_WAITING'}); }catch(e){}
+          }
+        });
+      });
+    }).catch(()=>{});
+  });
 }
 
 /* ---- Verrou + configuration d'équipe ---- */

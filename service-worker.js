@@ -1,5 +1,5 @@
 // Service worker — cache l'app et les données pour un usage hors-ligne
-const CACHE = 'planning-v56';
+const CACHE = 'planning-v57';
 const ASSETS = [
   '.',
   'index.html',
@@ -26,6 +26,10 @@ self.addEventListener('install', e => {
       )
     ).then(() => self.skipWaiting())
   );
+});
+
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
