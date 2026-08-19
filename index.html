@@ -1765,7 +1765,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v57";
+const APP_VERSION="v58";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -2777,13 +2777,17 @@ function autoLoadLocal(){
 /* ---- exporter les données courantes pour le web (planning-data.json) ---- */
 function isoLocal(d){return d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'';}
 function buildPayload(){
-  const out=state.entries.map(e=>({nom:e.nom,date:isoLocal(e.date),end:isoLocal(e.end),lib:e.lib,com:e.com,section:e.section,ress:e.ress,tache:e.tache,charge:e.charge,imput:e.imput||''}));
+  // IMPORTANT : on sérialise la liste COMPLÈTE (masqués inclus). Le masquage est un simple
+  // filtre d'affichage (stocké séparément sous 'hidden'), il ne doit jamais supprimer les données,
+  // sinon une personne masquée disparaît définitivement et ne peut plus être ré-affichée.
+  const src=(state.allEntries&&state.allEntries.length)?state.allEntries:state.entries;
+  const out=src.map(e=>({nom:e.nom,date:isoLocal(e.date),end:isoLocal(e.end),lib:e.lib,com:e.com,section:e.section,ress:e.ress,tache:e.tache,charge:e.charge,imput:e.imput||''}));
   const now=new Date();
   return {generated:`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,count:out.length,entries:out};
 }
 function publishToFirebase(){
   if(!fbReady){alert("Firebase n'est pas configuré. Renseignez firebase-config.json (voir Réglages → Espace administrateur → Connexion Firebase).");return;}
-  if(!state.entries.length){alert('Aucune donnée à publier. Importez d\'abord un fichier.');return;}
+  if(!state.entries.length && !(state.allEntries&&state.allEntries.length)){alert('Aucune donnée à publier. Importez d\'abord un fichier.');return;}
   const btn=document.getElementById('adminPublish');const old=btn?btn.textContent:'';if(btn)btn.textContent='Publication…';
   const data=buildPayload();
   fbSet('planning',data).then(()=>{
