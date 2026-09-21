@@ -117,6 +117,17 @@ header{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px
 .clock{margin-left:4px;display:flex;flex-direction:column;align-items:flex-start;padding:6px 13px;border-radius:13px;color:#fff;
   background:linear-gradient(145deg,rgba(59,130,246,.85),rgba(30,58,138,.85));backdrop-filter:blur(12px);border:1px solid rgba(120,170,255,.3);box-shadow:0 0 20px -6px var(--blue-glow)}
 .clock .t{font-family:'IBM Plex Mono';font-size:17px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+/* voyant en ligne / hors ligne */
+.net-badge{display:none;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.01em;border:1px solid var(--line-2);background:var(--glass-2);color:var(--ink);cursor:pointer;transition:.14s;white-space:nowrap}
+.net-badge:active{transform:scale(.96)}
+.net-badge .nb-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:var(--faint);transition:.2s}
+.net-badge[data-net="online"]{border-color:rgba(48,209,88,.5);color:#2fbf55}
+.net-badge[data-net="online"] .nb-dot{background:#30d158;box-shadow:0 0 9px #30d158}
+.net-badge[data-net="offline"]{border-color:rgba(255,159,10,.55);color:#e0900a;background:rgba(255,159,10,.1)}
+.net-badge[data-net="offline"] .nb-dot{background:#ff9f0a;box-shadow:0 0 9px #ff9f0a;animation:rttPulse 1.6s infinite}
+html[data-theme="light"] .net-badge[data-net="online"]{color:#1a7a34}
+html[data-theme="light"] .net-badge[data-net="offline"]{color:#8a5a00}
+@media(max-width:900px){.net-badge{padding:6px 10px;font-size:11px}.net-badge .nb-txt{display:none}.net-badge .nb-dot{width:11px;height:11px}}
 .clock .d{font-size:10px;opacity:.92;margin-top:3px;text-transform:capitalize}
 .top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 .stats{display:flex;gap:8px}
@@ -990,8 +1001,11 @@ html[data-theme="aero"] #fabToday{background:linear-gradient(145deg,#3fd4ff,#0a8
   </div>
   <div class="top-actions">
     <div class="stats" id="stats"></div>
+    <button class="net-badge" id="netBadge" type="button" title="État de la connexion"><span class="nb-dot"></span><span class="nb-txt">—</span></button>
     <button class="btn btn-blue" id="searchTop" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg>Rechercher</button>
+    <button class="btn btn-ghost" id="planTop" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Planification</button>
     <button class="btn btn-ghost" id="rttTop" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 16l2 2 4-4"/></svg>RTT</button>
     <button class="btn btn-ghost" id="settingsTop" style="display:none">
@@ -1524,7 +1538,58 @@ html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
 .rtt-vpop .cmt{font-size:12.5px;font-weight:600;margin-top:4px}
 .rtt-vpop .cmt.over{color:#ff6b61}.rtt-vpop .cmt.miss{color:#ff9f0a}.rtt-vpop .cmt.ok{color:#30d158}
 .rtt-vpop .note{font-size:11px;color:var(--faint);margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
-@media(max-width:900px){#rttTop{display:none!important}}
+@media(max-width:900px){#rttTop{display:none!important}#planTop{display:none!important}}
+/* ===== Planification ===== */
+#planif{position:fixed;inset:0;z-index:53;display:none;flex-direction:column;background:rgba(0,3,8,.86);backdrop-filter:blur(22px)}
+#planif.show{display:flex;animation:fade .22s ease}
+html[data-theme="light"] #planif{background:rgba(238,242,248,.85)}
+html[data-theme="aero"] #planif{background:rgba(4,16,26,.8)}
+.plan-panel{display:none;flex-direction:column;flex:1;min-height:0}
+.plan-panel.on{display:flex}
+.plan-agents{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.plan-ag{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--line);cursor:pointer;transition:.12s}
+.plan-ag:active{transform:scale(.99)}
+.plan-ag.on{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
+.plan-ag .av{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:12px;font-weight:800;flex:0 0 32px}
+.plan-ag .nm{font-size:14px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-ag .ck{width:22px;height:22px;border-radius:7px;border:2px solid var(--line-2);flex:0 0 auto;display:grid;place-items:center;color:#fff}
+.plan-ag .ck svg{width:14px;height:14px;opacity:0}
+.plan-ag.on .ck{background:var(--blue);border-color:var(--blue)}
+.plan-ag.on .ck svg{opacity:1}
+/* résultats */
+.plan-day{margin-bottom:18px}
+.plan-day-h{position:sticky;top:0;z-index:2;display:flex;align-items:baseline;gap:10px;padding:9px 2px;margin-bottom:8px;background:linear-gradient(180deg,var(--bg2) 70%,transparent);backdrop-filter:blur(6px)}
+.plan-day-h b{font-family:'Fraunces';font-size:17px;text-transform:capitalize}
+.plan-day-h .ct{font-size:11.5px;color:var(--soft);margin-left:auto}
+.plan-sec{margin-bottom:12px}
+.plan-sec-t{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--soft);margin:0 2px 7px;display:flex;align-items:center;gap:7px}
+.plan-sec-t .n{background:var(--glass-2);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:11px}
+.plan-card{background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.plan-card.group{border-color:rgba(10,132,255,.45);box-shadow:0 0 0 1px rgba(10,132,255,.15) inset}
+.plan-card .pc-h{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.plan-card .pc-h .cn{font-family:'Fraunces';font-size:15px;flex:1;word-break:break-word}
+.plan-card .pc-badge{font-size:10px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:linear-gradient(145deg,var(--blue),var(--blue-d));color:#fff;white-space:nowrap;flex:0 0 auto}
+.plan-card .pc-count{font-size:11.5px;color:var(--soft);white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.plan-card .pc-count svg{width:13px;height:13px}
+.plan-chips{display:flex;flex-wrap:wrap;gap:6px}
+.plan-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:4px 9px 4px 4px;border-radius:999px;background:var(--glass-2);border:1px solid var(--line-2)}
+.plan-chip .av-mini{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;flex:0 0 auto}
+.plan-chip .hh{color:var(--faint);font-weight:500;font-size:11px}
+.plan-qq{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line)}
+.plan-qq:last-child{border-bottom:0}
+.plan-qq .av{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:11px;font-weight:800;flex:0 0 30px}
+.plan-qq .who{font-size:13.5px;font-weight:600;flex:0 0 auto;min-width:34%}
+.plan-qq .what{font-size:12.5px;color:var(--soft);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-qq .cat-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.plan-dispo{background:rgba(48,209,88,.1);border-color:rgba(48,209,88,.35)}
+.plan-dispo .plan-chip{border-color:rgba(48,209,88,.4)}
+.plan-chip.mobil{border-color:rgba(255,159,10,.5);background:rgba(255,159,10,.1)}
+.plan-chip .mob-tag{font-size:9.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:#e0900a;background:rgba(255,159,10,.16);padding:1px 6px;border-radius:999px;margin-left:2px}
+.plan-daynav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;background:var(--glass-2);border:1px solid var(--line);border-radius:14px;padding:7px 8px;position:sticky;top:0;z-index:3;backdrop-filter:blur(10px)}
+.plan-daynav button{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;color:var(--ink);background:var(--glass);border:1px solid var(--line-2)}
+.plan-daynav button:active{transform:scale(.92)}
+.plan-daynav .dl{flex:1;text-align:center;font-family:'Fraunces';font-size:15px;text-transform:capitalize}
+.plan-empty{padding:26px 16px;text-align:center;color:var(--soft);font-size:13px}
 </style>
 
 <!-- ===== Module RTT : écran ===== -->
@@ -1654,6 +1719,70 @@ html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
   </div>
 </div>
 
+<!-- ===== PLANIFICATION ===== -->
+<div id="planif">
+  <div class="sheet">
+    <div class="sheet-bar">
+      <button class="sheet-back" id="planBack" style="visibility:hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Retour</button>
+      <button class="sheet-close" id="planQuit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="sheet-head"><h2 id="planTitle">Planification</h2><p id="planSub">Qui fait quoi, regroupements par chantier et disponibilités.</p></div>
+    <div class="set-list" style="gap:0">
+
+      <!-- Étape 1 : périmètre agents -->
+      <div class="plan-panel on" data-planpanel="gate">
+        <div class="rtt-choice">
+          <button class="rtt-big" id="planAll">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span><span class="t">Tout le monde</span><span class="d">Afficher l'ensemble de l'équipe pour la date ou la période choisie.</span></span>
+          </button>
+          <button class="rtt-big mgr" id="planPick">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+            <span><span class="t">Choisir des agents</span><span class="d">Sélection multiple : ne suivre que les agents qui vous intéressent.</span></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : sélection multiple d'agents -->
+      <div class="plan-panel" data-planpanel="select">
+        <input id="planSearch" class="ts-input" type="text" placeholder="🔍 Rechercher un agent…" autocomplete="off">
+        <div style="display:flex;gap:8px;margin:8px 0">
+          <button class="rtt-pw-btn" id="planSelAll">Tout cocher</button>
+          <button class="rtt-pw-btn" id="planSelNone">Tout décocher</button>
+          <span id="planSelCount" style="margin-left:auto;align-self:center;font-size:12px;color:var(--soft)"></span>
+        </div>
+        <div class="plan-agents" id="planAgents"></div>
+        <button class="btn btn-blue" id="planSelGo" style="width:100%;justify-content:center;padding:13px;margin-top:12px">Continuer</button>
+      </div>
+
+      <!-- Étape 3 : date ou période -->
+      <div class="plan-panel" data-planpanel="scope">
+        <div class="rtt-mgr-toggle" id="planScopeToggle">
+          <button data-scope="day" class="on">Une date précise</button>
+          <button data-scope="range">Une période</button>
+        </div>
+        <div id="planScopeDay">
+          <label class="ts-label">Date</label>
+          <input id="planDate" class="ts-input" type="date">
+        </div>
+        <div id="planScopeRange" style="display:none">
+          <label class="ts-label">Du</label>
+          <input id="planStart" class="ts-input" type="date">
+          <label class="ts-label">Au</label>
+          <input id="planEnd" class="ts-input" type="date">
+        </div>
+        <button class="btn btn-blue" id="planShow" style="width:100%;justify-content:center;padding:13px;margin-top:14px">Afficher la planification</button>
+        <p class="rtt-err" id="planScopeErr"></p>
+      </div>
+
+      <!-- Étape 4 : résultats -->
+      <div class="plan-panel" data-planpanel="results">
+        <div id="planResults"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <input type="file" id="cfgFile" accept=".json" hidden>
 
@@ -1679,6 +1808,7 @@ html[data-theme="light"] .rtt-alert.ok{color:#1a7a34}
     <button class="tab" data-tab="vue"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>Vue</button>
     <button class="tab" data-tab="people"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></span>Personnes</button>
     <button class="tab" data-tab="search"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg></span>Recherche</button>
+    <button class="tab" data-tab="planif"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Planif.</button>
     <button class="tab" data-tab="rtt"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M9 16l2 2 4-4"/></svg></span>RTT</button>
     <button class="tab" data-tab="settings"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 14H4a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 6 8.6l-.38-.38a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.18l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 20.4 11H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Réglages</button>
   </div>
@@ -1765,7 +1895,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v58";
+const APP_VERSION="v61";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -2626,10 +2756,53 @@ function readFile(file){
   };
   if(isJson)reader.readAsText(file);else reader.readAsArrayBuffer(file);
 }
+/* ---- voyant en ligne / hors ligne ---- */
+function isOnline(){ return (typeof navigator!=='undefined' && 'onLine' in navigator) ? navigator.onLine : true; }
+function setNetStatus(){
+  const b=document.getElementById('netBadge'); if(!b)return;
+  const online=isOnline();
+  b.dataset.net=online?'online':'offline';
+  const txt=b.querySelector('.nb-txt');
+  const fromCache=(state.srcType==='cache');
+  if(txt) txt.textContent=online?'En ligne':'Hors ligne';
+  b.title=online
+    ? (fbReady?'Connecté — données synchronisées'+(state.generated?' (maj '+state.generated+')':''):'Connecté à Internet')
+    : 'Hors ligne — dernière version enregistrée affichée'+(state.generated?' (maj '+state.generated+')':'');
+  // en cas de retour en ligne, proposer implicitement l'actualisation via le clic
+  b.classList.toggle('nb-stale', !online || fromCache);
+}
+let _netInit=false;
+function initNetWatch(){
+  if(_netInit)return; _netInit=true;
+  window.addEventListener('online', setNetStatus);
+  window.addEventListener('offline', setNetStatus);
+  const b=document.getElementById('netBadge');
+  if(b) b.onclick=()=>{
+    if(isOnline()){
+      // en ligne : ré-actualiser les données depuis Firebase / le réseau
+      const t=b.querySelector('.nb-txt'); const old=t?t.textContent:''; if(t)t.textContent='Actualisation…';
+      if(fbReady){
+        fbGet('planning').then(data=>{
+          if(data&&data.entries&&data.entries.length){
+            state.generated=data.generated||'';state.srcType='firebase';
+            cachePlanning(data);
+            loadEntries(data.entries, `${data.count||data.entries.length} affectations`+(data.generated?` · maj ${data.generated}`:''));
+          }
+          setNetStatus();
+        }).catch(()=>{ if(t)t.textContent=old; setNetStatus(); });
+      } else { if(t)t.textContent=old; setNetStatus(); }
+    } else {
+      alert('Vous êtes hors ligne.\nLa dernière version enregistrée du planning est affichée'+(state.generated?' (mise à jour du '+state.generated+').':'.'));
+    }
+  };
+  setNetStatus();
+}
 function showApp(){
+  initNetWatch();
   document.getElementById('empty').style.display='none';
   document.getElementById('app').style.display='grid';
-  ['searchTop','settingsTop','clock','rttTop'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
+  ['searchTop','settingsTop','clock','rttTop','planTop','netBadge'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
+  setNetStatus();
   syncNav();renderStats();renderPeople();
   applyEnabledViews();
   maybeShowUpdateToast();
@@ -2737,28 +2910,53 @@ function loadEntries(rawEntries,labelTxt){
 }
 
 /* ---- tenter le chargement automatique des données en ligne ---- */
+/* Cache local de la dernière version du planning, pour l'usage hors-ligne. */
+function cachePlanning(data){ try{ lsSet('planning_cache', JSON.stringify(data)); }catch(e){} }
+function readPlanningCache(){ try{ const s=lsGet('planning_cache'); return s?JSON.parse(s):null; }catch(e){ return null; } }
+function loadFromCache(){
+  const data=readPlanningCache();
+  if(data && data.entries && data.entries.length){
+    state.generated=data.generated||'';state.srcType='cache';
+    const lab=`${data.count||data.entries.length} affectations`+(data.generated?` · maj ${data.generated}`:'')+' · hors ligne';
+    loadEntries(data.entries,lab);
+    setNetStatus(); // reflète l'état + la source
+    return true;
+  }
+  return false;
+}
 function autoLoad(){
-  // 0) Firebase (source principale, partagée) ; 1) JSON local (secours hors-ligne) ; 2) .xlsx ; 3) écran d'import.
+  // 0) Firebase (source principale, partagée) ; 1) cache local (hors-ligne) ; 2) JSON intégré ; 3) .xlsx ; 4) écran d'import.
   if(fbReady){
+    let done=false;
+    const fallback=()=>{ if(done)return; done=true; if(!loadFromCache()) autoLoadLocal(); };
+    // Sécurité hors-ligne : si Firebase ne répond pas vite (pas de réseau), on bascule sur le cache local.
+    const timer=setTimeout(fallback, 4500);
     fbGet('planning').then(data=>{
+      if(done)return; done=true; clearTimeout(timer);
       if(data && data.entries && data.entries.length){
         state.generated=data.generated||'';state.srcType='firebase';
         const lab=`${data.count||data.entries.length} affectations`+(data.generated?` · maj ${data.generated}`:'');
+        cachePlanning(data);          // on garde la dernière version pour l'hors-ligne
         loadEntries(data.entries,lab);
+        setNetStatus();
       }else{
-        autoLoadLocal();
+        if(!loadFromCache()) autoLoadLocal();
       }
-    }).catch(()=>autoLoadLocal());
+    }).catch(()=>{ clearTimeout(timer); fallback(); });
     return;
   }
-  autoLoadLocal();
+  // pas de Firebase : cache local d'abord (hors-ligne), sinon fichiers intégrés
+  if(!loadFromCache()) autoLoadLocal();
 }
 function autoLoadLocal(){
   fetch('planning-data.json',{cache:'no-cache'}).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
     state.generated=data.generated||'';state.srcType='json';
     const lab=`${data.count||data.entries.length} affectations`+(data.generated?` · maj ${data.generated}`:'');
+    cachePlanning(data);
     loadEntries(data.entries,lab);
+    setNetStatus();
   }).catch(()=>{
+    if(loadFromCache())return;
     fetch('planning.xlsx',{cache:'no-cache'}).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(buf=>{
       try{
         const wb=XLSX.read(buf,{type:'array',cellDates:true});
@@ -2849,7 +3047,7 @@ document.getElementById('modalClose').onclick=closeOverlay;
 document.getElementById('overlay').onclick=e=>{if(e.target.id==='overlay')closeOverlay();};
 document.getElementById('searchOv').onclick=e=>{if(e.target.id==='searchOv'){e.currentTarget.classList.remove('show');setTab('plan');}};
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeOverlay();document.getElementById('searchOv').classList.remove('show');hideSettings();document.getElementById('admin').classList.remove('show');document.getElementById('vuePicker').classList.remove('show');if(window.RTT)RTT.close();}
+  if(e.key==='Escape'){closeOverlay();document.getElementById('searchOv').classList.remove('show');hideSettings();document.getElementById('admin').classList.remove('show');document.getElementById('vuePicker').classList.remove('show');if(window.RTT)RTT.close();if(window.PLANIF)PLANIF.close();}
   if((e.ctrlKey||e.metaKey)&&e.key==='f'&&document.getElementById('app').style.display!=='none'){e.preventDefault();openSearch();}
 });
 
@@ -2896,10 +3094,12 @@ document.getElementById('pickerSearch').oninput=renderPickerList;
 document.querySelectorAll('#bottomNav .tab').forEach(b=>b.onclick=()=>{
   const t=b.dataset.tab;
   if(t!=='rtt'&&window.RTT)RTT.close();
+  if(t!=='planif'&&window.PLANIF)PLANIF.close();
   if(t==='plan')goPlanning();
   else if(t==='vue')openVuePicker();
   else if(t==='people'){setTab('people');showPicker();}
   else if(t==='search')openSearch();
+  else if(t==='planif'){if(window.PLANIF)PLANIF.open();}
   else if(t==='rtt'){if(window.RTT)RTT.open();}
   else if(t==='settings')showSettings();
 });
@@ -3279,7 +3479,7 @@ if('serviceWorker' in navigator){
 
 /* ---- Verrou + configuration d'équipe ---- */
 let teamName="Planning";
-function startApp(){ Promise.all([loadHiddenFromFb(),loadCatIconsFromFb(),loadCatStyleFromFb(),loadEnabledViewsFromFb()]).then(autoLoad).catch(autoLoad); }
+function startApp(){ lsSet('device_authed','1'); Promise.all([loadHiddenFromFb(),loadCatIconsFromFb(),loadCatStyleFromFb(),loadEnabledViewsFromFb()]).then(autoLoad).catch(autoLoad); }
 function shakeLock(msg){
   const er=document.getElementById('lockErr');er.textContent=msg||'Code incorrect.';document.getElementById('lockInput').value='';
   const card=document.querySelector('#lock .lock-card');card.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:240});
@@ -3342,11 +3542,18 @@ function bootWithTeam(){
   }
   // nom d'équipe : lecture publique, avant même toute connexion
   fbGet('config/teamName').then(n=>{teamName=n||'Planning';const lt=document.getElementById('lockTeam');if(lt)lt.textContent=teamName;}).catch(()=>{});
+  // Sécurité hors-ligne : si l'appareil s'est déjà authentifié et qu'on est sans réseau,
+  // on démarre directement sur la dernière version en cache sans attendre Firebase (qui pourrait bloquer).
+  let handled=false;
+  const go=fn=>{ if(handled)return; handled=true; fn(); };
+  if(!isOnline() && lsGet('device_authed')==='1'){ go(startApp); return; }
   // Firebase Auth mémorise déjà la session sur l'appareil : on regarde si elle existe avant d'afficher le verrou.
   const unsub=fbAuth.onAuthStateChanged(user=>{
-    unsub();
-    if(user){ startApp(); } else { showLockNow(); }
+    unsub&&unsub();
+    go(()=> user ? startApp() : showLockNow());
   });
+  // filet de sécurité : si l'état d'auth ne revient pas (réseau capricieux), on décide au bout de 5 s.
+  setTimeout(()=>{ go(()=> (lsGet('device_authed')==='1') ? startApp() : showLockNow()); }, 5000);
 }
 function showLockNow(){
   document.getElementById('lockTeam').textContent=teamName||'Planning';
@@ -4175,6 +4382,220 @@ const RTT = (function(){
 
   const api={open,close,openManagement,attachDayVoyant};
   window.RTT=api;
+  return api;
+})();
+</script>
+
+<script>
+/* ===== Module PLANIFICATION : qui fait quoi, regroupements chantier, disponibilités ===== */
+const PLANIF=(function(){
+  const P={scope:'day',selected:null}; // selected=null => tout le monde
+  function show(){ document.getElementById('planif').classList.add('show'); if(typeof setTab==='function')setTab('planif'); }
+  function close(){ document.getElementById('planif').classList.remove('show'); }
+  function panel(name){
+    document.querySelectorAll('#planif .plan-panel').forEach(p=>p.classList.toggle('on',p.dataset.planpanel===name));
+    const back=document.getElementById('planBack'); back.style.visibility=(name==='gate')?'hidden':'visible';
+    const t=document.getElementById('planTitle'), s=document.getElementById('planSub');
+    if(name==='gate'){t.textContent='Planification';s.textContent='Qui fait quoi, regroupements par chantier et disponibilités.';}
+    else if(name==='select'){t.textContent='Choisir des agents';s.textContent='Sélection multiple — cochez les agents à suivre.';}
+    else if(name==='scope'){t.textContent='Période';s.textContent='Une date précise ou une période à afficher.';}
+    else if(name==='results'){t.textContent='Planification';s.textContent=scopeLabel();}
+    P.panelName=name;
+  }
+  function open(){ panel('gate'); show(); }
+  function back(){
+    if(P.panelName==='select'||P.panelName==='scope' && !P.cameFromSelect){ panel(P.panelName==='scope'&&!P.selectedChosen?'gate':'gate'); }
+    if(P.panelName==='select'){ panel('gate'); }
+    else if(P.panelName==='scope'){ panel(P.selected? 'select':'gate'); }
+    else if(P.panelName==='results'){ panel('scope'); }
+  }
+  function realAgents(){ return (state.people||[]).filter(n=>!SPECIAL.test(n)); }
+
+  /* étape 1 */
+  function goAll(){ P.selected=null; panel('scope'); prefillDates(); }
+  function goPick(){ P.selected=P.selected||new Set(realAgents()); renderSelect(''); panel('select'); setTimeout(()=>{try{document.getElementById('planSearch').focus();}catch(e){}},50); }
+
+  /* étape 2 : sélection multiple */
+  function renderSelect(q){
+    const box=document.getElementById('planAgents'); box.innerHTML='';
+    const list=realAgents(); const nq=normKey(q||'');
+    if(!list.length){ box.innerHTML='<div class="plan-empty">Aucun agent dans le planning.</div>'; return; }
+    for(const n of list){
+      if(nq&&!normKey(n).includes(nq))continue;
+      const on=P.selected.has(n), col=state.color.get(n)||'#8a93a6';
+      const row=document.createElement('button'); row.className='plan-ag'+(on?' on':'');
+      row.innerHTML='<span class="av" style="background:'+col+'33;color:'+textCol(col)+'">'+initials(n)+'</span>'+
+        '<span class="nm">'+esc(n)+'</span>'+
+        '<span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>';
+      row.onclick=()=>{ if(P.selected.has(n))P.selected.delete(n); else P.selected.add(n); row.classList.toggle('on'); updateSelCount(); };
+      box.appendChild(row);
+    }
+    updateSelCount();
+  }
+  function updateSelCount(){ const el=document.getElementById('planSelCount'); if(el)el.textContent=(P.selected?P.selected.size:0)+' sélectionné'+((P.selected&&P.selected.size>1)?'s':''); }
+
+  /* étape 3 : dates */
+  function prefillDates(){
+    const t=dKey(new Date());
+    ['planDate','planStart','planEnd'].forEach(id=>{const el=document.getElementById(id); if(el&&!el.value)el.value=t;});
+    document.getElementById('planScopeErr').textContent='';
+  }
+  function setScope(sc){ P.scope=sc;
+    document.getElementById('planScopeDay').style.display=sc==='day'?'block':'none';
+    document.getElementById('planScopeRange').style.display=sc==='range'?'block':'none';
+    document.querySelectorAll('#planScopeToggle button').forEach(b=>b.classList.toggle('on',b.dataset.scope===sc));
+  }
+  function scopeDays(){
+    const err=document.getElementById('planScopeErr'); err.textContent='';
+    if(P.scope==='day'){
+      const d=parseD(document.getElementById('planDate').value); if(!d){err.textContent='Choisissez une date.';return null;}
+      return [d];
+    }
+    const a=parseD(document.getElementById('planStart').value), b=parseD(document.getElementById('planEnd').value);
+    if(!a||!b){err.textContent='Choisissez le début et la fin.';return null;}
+    if(b<a){err.textContent='La fin est avant le début.';return null;}
+    const out=[]; for(let d=new Date(a); d<=b; d=addDays(d,1)) out.push(new Date(d));
+    if(out.length>62){err.textContent='Période trop longue (max 2 mois).';return null;}
+    return out;
+  }
+  function parseD(s){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||''); return m?new Date(+m[1],+m[2]-1,+m[3]):null; }
+  function scopeLabel(){
+    if(P.scope==='day'){ const d=parseD(document.getElementById('planDate').value); return d?(DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]):'—'; }
+    const a=parseD(document.getElementById('planStart').value), b=parseD(document.getElementById('planEnd').value);
+    if(!a||!b)return '—';
+    return 'du '+a.getDate()+' '+MONTHS_SHORT[a.getMonth()]+' au '+b.getDate()+' '+MONTHS_SHORT[b.getMonth()];
+  }
+
+  /* étape 4 : rendu */
+  function run(){
+    const days=scopeDays(); if(!days)return;
+    P.selectedChosen=true;
+    panel('results');
+    const box=document.getElementById('planResults'); box.innerHTML='';
+    const names=P.selected? [...P.selected] : realAgents();
+    const nameSet=new Set(names);
+    if(!names.length){ box.innerHTML='<div class="plan-empty">Aucun agent sélectionné.</div>'; return; }
+    let html='';
+    // navigation jour précédent / suivant (uniquement en mode date précise)
+    if(P.scope==='day'){
+      const d=days[0];
+      html+='<div class="plan-daynav"><button id="planPrevDay" aria-label="Jour précédent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>'+
+        '<span class="dl">'+DOW_FULL[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+'</span>'+
+        '<button id="planNextDay" aria-label="Jour suivant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></div>';
+    }
+    for(const day of days){ html+=renderDay(day,names,nameSet); }
+    box.innerHTML=html;
+    if(P.scope==='day'){
+      const pv=document.getElementById('planPrevDay'), nx=document.getElementById('planNextDay');
+      if(pv)pv.onclick=()=>shiftDay(-1);
+      if(nx)nx.onclick=()=>shiftDay(1);
+    }
+    box.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>{ if(typeof openAction==='function')openAction(+el.dataset.id); });
+  }
+  function shiftDay(delta){
+    const el=document.getElementById('planDate');
+    const d=parseD(el.value)||new Date();
+    const nd=addDays(d,delta);
+    el.value=dKey(nd);
+    document.getElementById('planSub').textContent=scopeLabel();
+    run();
+  }
+  function renderDay(day,names,nameSet){
+    // affectations du jour pour les agents suivis
+    const dayEntries=entriesOnDay(state.entries,day).filter(e=>nameSet.has(e.nom));
+    // regrouper par chantier
+    const chant=new Map(); // nom -> {agents:Map(nom->entry)}
+    const others={bureau:[],formation:[]};
+    const mobil=new Map(); // dépannage / temps réel => AGENT DISPONIBLE (mobilisable)
+    const busy=new Set(); const absent=new Set();
+    for(const e of dayEntries){
+      const cat=categorize(e);
+      if(cat==='chantier'){ const key=chantierName(e); if(!chant.has(key))chant.set(key,new Map()); chant.get(key).set(e.nom,e); busy.add(e.nom); }
+      else if(cat==='absence'){ absent.add(e.nom); }
+      else if(cat==='depannage'){ if(!mobil.has(e.nom))mobil.set(e.nom,e); }   // dépannage = disponible
+      else { others[cat].push(e); busy.add(e.nom); }
+    }
+    // le chantier/bureau/formation prime : un agent occupé n'est pas "mobilisable"
+    for(const n of busy) mobil.delete(n);
+    // disponibles = libres (aucune affectation) OU mobilisables (dépannage/temps réel), hors absents et occupés
+    const free=names.filter(n=>!busy.has(n)&&!absent.has(n)&&!mobil.has(n));
+    const dispoCount=free.length+mobil.size;
+    const dateLbl=DOW_FULL[day.getDay()]+' '+day.getDate()+' '+MONTHS[day.getMonth()];
+    let h='<div class="plan-day"><div class="plan-day-h"><b>'+dateLbl+'</b><span class="ct">'+names.length+' agent'+(names.length>1?'s':'')+' suivi'+(names.length>1?'s':'')+'</span></div>';
+
+    // section chantiers (regroupements)
+    if(chant.size){
+      const sorted=[...chant.entries()].sort((a,b)=>b[1].size-a[1].size);
+      h+='<div class="plan-sec"><div class="plan-sec-t">Chantiers <span class="n">'+chant.size+'</span></div>';
+      for(const [name,agents] of sorted){
+        const group=agents.size>=2;
+        h+='<div class="plan-card'+(group?' group':'')+'"><div class="pc-h"><span class="cn">'+esc(name)+'</span>'+
+           (group?'<span class="pc-badge">Regroupement</span>':'')+
+           '<span class="pc-count"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'+agents.size+'</span></div>'+
+           '<div class="plan-chips">';
+        for(const [nom,e] of agents){ const col=state.color.get(nom)||'#8a93a6'; const tm=fmtTime(e.date); const te=fmtTime(e.end);
+          h+='<span class="plan-chip" data-id="'+e._id+'"><span class="av-mini" style="background:'+col+'33;color:'+textCol(col)+'">'+initials(nom)+'</span>'+esc(nom)+(tm?' <span class="hh">'+tm+(te?'–'+te:'')+'</span>':'')+'</span>';
+        }
+        h+='</div></div>';
+      }
+      h+='</div>';
+    }
+    // section autres affectations (qui fait quoi) — dépannage exclu (compté comme disponible)
+    const otherAll=[].concat(others.bureau,others.formation);
+    if(otherAll.length){
+      h+='<div class="plan-sec"><div class="plan-sec-t">Autres affectations <span class="n">'+otherAll.length+'</span></div><div class="plan-card">';
+      otherAll.sort((a,b)=>a.nom.localeCompare(b.nom,'fr'));
+      for(const e of otherAll){ const col=state.color.get(e.nom)||'#8a93a6'; const cat=categorize(e); const what=(e.lib||e.section||CAT_META[cat].label);
+        h+='<div class="plan-qq" data-id="'+e._id+'"><span class="cat-dot" style="background:'+catColor(cat)+'"></span><span class="av" style="background:'+col+'33;color:'+textCol(col)+'">'+initials(e.nom)+'</span><span class="who">'+esc(e.nom)+'</span><span class="what">'+esc(what)+'</span></div>';
+      }
+      h+='</div></div>';
+    }
+    // section absents
+    if(absent.size){
+      h+='<div class="plan-sec"><div class="plan-sec-t">Absents / congés <span class="n">'+absent.size+'</span></div><div class="plan-card"><div class="plan-chips">';
+      for(const n of [...absent].sort((a,b)=>a.localeCompare(b,'fr'))){ const col=state.color.get(n)||'#8a93a6';
+        h+='<span class="plan-chip"><span class="av-mini" style="background:'+col+'33;color:'+textCol(col)+'">'+initials(n)+'</span>'+esc(n)+'</span>';
+      }
+      h+='</div></div></div>';
+    }
+    // section disponibles (libres + mobilisables en dépannage/temps réel)
+    h+='<div class="plan-sec"><div class="plan-sec-t" style="color:#30d158">Disponibles <span class="n">'+dispoCount+'</span></div>';
+    if(dispoCount){
+      h+='<div class="plan-card plan-dispo"><div class="plan-chips">';
+      for(const n of free.sort((a,b)=>a.localeCompare(b,'fr'))){ const col=state.color.get(n)||'#8a93a6';
+        h+='<span class="plan-chip"><span class="av-mini" style="background:'+col+'33;color:'+textCol(col)+'">'+initials(n)+'</span>'+esc(n)+'</span>';
+      }
+      // mobilisables : disponibles mais actuellement sur dépannage / temps réel
+      const mob=[...mobil.entries()].sort((a,b)=>a[0].localeCompare(b[0],'fr'));
+      for(const [n,e] of mob){ const col=state.color.get(n)||'#8a93a6';
+        h+='<span class="plan-chip mobil" data-id="'+e._id+'"><span class="av-mini" style="background:'+col+'33;color:'+textCol(col)+'">'+initials(n)+'</span>'+esc(n)+' <span class="mob-tag">dépannage</span></span>';
+      }
+      h+='</div></div>';
+    } else { h+='<div class="plan-card" style="color:var(--soft);font-size:12.5px">Personne de disponible ce jour parmi les agents suivis.</div>'; }
+    h+='</div>';
+
+    if(!chant.size&&!otherAll.length&&!absent.size&&!dispoCount){ h+='<div class="plan-empty">Aucune donnée ce jour.</div>'; }
+    h+='</div>';
+    return h;
+  }
+
+  function init(){
+    const top=document.getElementById('planTop'); if(top)top.onclick=open;
+    document.getElementById('planQuit').onclick=()=>{ close(); if(typeof goPlanning==='function')goPlanning(); };
+    document.getElementById('planBack').onclick=back;
+    document.getElementById('planAll').onclick=goAll;
+    document.getElementById('planPick').onclick=goPick;
+    document.getElementById('planSearch').oninput=e=>renderSelect(e.target.value);
+    document.getElementById('planSelAll').onclick=()=>{ P.selected=new Set(realAgents()); renderSelect(document.getElementById('planSearch').value); };
+    document.getElementById('planSelNone').onclick=()=>{ P.selected=new Set(); renderSelect(document.getElementById('planSearch').value); };
+    document.getElementById('planSelGo').onclick=()=>{ if(!P.selected||!P.selected.size){alert('Sélectionnez au moins un agent, ou revenez pour choisir « Tout le monde ».');return;} panel('scope'); prefillDates(); };
+    document.querySelectorAll('#planScopeToggle button').forEach(b=>b.onclick=()=>setScope(b.dataset.scope));
+    document.getElementById('planShow').onclick=run;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init); else init();
+
+  const api={open,close};
+  window.PLANIF=api;
   return api;
 })();
 </script>
