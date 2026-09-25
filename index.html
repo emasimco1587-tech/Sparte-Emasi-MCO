@@ -1895,7 +1895,7 @@ const WD_NAMES=['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
 
 const state={entries:[],byPerson:new Map(),people:[],current:null,view:'week',cursor:new Date(),q:'',team:new Map(),color:new Map(),fav:null,generated:'',srcType:'',teamFilter:new Set(),hidden:new Set(),allEntries:[],catIcons:{},catColors:{},iconSize:'md',enabledViews:null};
 const PALETTE=['#0a84ff','#ff9f0a','#30d158','#ff375f','#bf5af2','#64d2ff','#ffd60a','#ff6482','#5e5ce6','#40c8e0','#ac8e68','#32d74b','#ff6b22','#66d4cf','#da8fff','#a2845e','#ff453a','#7d7aff','#ffd426','#5ac8fa'];
-const APP_VERSION="v61";
+const APP_VERSION="v62";
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
@@ -2724,6 +2724,45 @@ function runGlobalSearch(){
 
 /* ---------- file loading ---------- */
 function fileLabel(name){document.getElementById('subtitle').textContent=`${name} · ${state.entries.length} affectations`;}
+/* Normalise des affectations brutes (JSON) dans le format interne (dates -> objets Date). */
+function normalizeRaw(rawEntries){
+  return rawEntries.map(e=>({
+    nom:norm(e.nom),date:toDate(e.date),end:e.end?toDate(e.end):null,
+    lib:norm(e.lib),com:norm(e.com),section:norm(e.section),
+    ress:norm(e.ress),tache:norm(e.tache),charge:norm(e.charge),imput:norm(e.imput)
+  })).filter(e=>e.date&&e.nom);
+}
+/* Années civiles couvertes par un lot d'affectations. */
+function yearsOf(entries){ const s=new Set(); for(const e of entries){ if(e.date)s.add(e.date.getFullYear()); } return s; }
+/* Fusion par année : on garde les affectations existantes des années NON couvertes par le nouveau
+   fichier, et on ajoute celles du nouveau fichier. => 2026 + 2027 coexistent ; réimporter une
+   année la met à jour sans toucher aux autres. */
+function mergeByYear(newEntries){
+  const ny=yearsOf(newEntries);
+  const kept=(state.allEntries||[]).filter(e=>e.date&&!ny.has(e.date.getFullYear()));
+  return kept.concat(newEntries);
+}
+/* Applique un import manuel : propose Fusion (par année) ou Remplacement si des données existent. */
+function applyImport(entries,label){
+  const hasExisting=!!(state.allEntries&&state.allEntries.length);
+  let finalEntries=entries, mergedNote='';
+  if(hasExisting){
+    const ny=[...yearsOf(entries)].sort();
+    const others=[...yearsOf(state.allEntries)].filter(y=>!ny.includes(y)).sort();
+    const merge=confirm(
+      'Des données sont déjà chargées.\n\n'+
+      '• OK = AJOUTER ce fichier : l\'année '+ny.join(', ')+' est intégrée'+(others.length?', les années '+others.join(', ')+' sont conservées':'')+'.\n'+
+      '• Annuler = REMPLACER tout le planning par ce fichier.'
+    );
+    if(merge){ finalEntries=mergeByYear(entries); mergedNote=' · fusionné ('+[...yearsOf(finalEntries)].sort().join(', ')+')'; }
+  }
+  const prevPerson=state.current,prevView=state.view;
+  build(finalEntries);
+  if(prevPerson&&state.byPerson.has(prevPerson))state.current=prevPerson;
+  if(prevView)state.view=prevView;
+  document.getElementById('subtitle').textContent=label+mergedNote;
+  showApp();
+}
 function readFile(file){
   document.getElementById('err').textContent='';
   const isJson=/\.json$/i.test(file.name)||file.type==='application/json';
@@ -2734,9 +2773,10 @@ function readFile(file){
         const data=JSON.parse(ev.target.result);
         const raw=Array.isArray(data)?data:(data.entries||[]);
         if(!raw.length){document.getElementById('err').textContent="Ce fichier JSON ne contient aucune affectation.";return;}
+        const entries=normalizeRaw(raw);
+        if(!entries.length){document.getElementById('err').textContent="Format JSON non reconnu.";return;}
         state.generated=(data&&data.generated)||fmtToday();state.srcType='json';
-        const lab=`${file.name} · ${raw.length} affectations`;
-        if(!loadEntries(raw,lab))document.getElementById('err').textContent="Format JSON non reconnu.";
+        applyImport(entries,`${file.name} · ${entries.length} affectations`);
         return;
       }
       const wb=XLSX.read(ev.target.result,{type:'array',cellDates:true});
@@ -2746,12 +2786,7 @@ function readFile(file){
       const entries=parse(rows);
       if(!entries.length){document.getElementById('err').textContent="Aucune affectation détectée. Vérifiez les colonnes « Nom-Prénom » et « Date de début ».";return;}
       state.generated=fmtToday();state.srcType='xlsx';
-      const prevPerson=state.current,prevView=state.view;
-      build(entries);
-      if(prevPerson&&state.byPerson.has(prevPerson))state.current=prevPerson;
-      if(prevView)state.view=prevView;
-      fileLabel(file.name);
-      showApp();
+      applyImport(entries,`${file.name} · ${entries.length} affectations`);
     }catch(err){console.error(err);document.getElementById('err').textContent='Erreur de lecture : '+err.message;}
   };
   if(isJson)reader.readAsText(file);else reader.readAsArrayBuffer(file);
